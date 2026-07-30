@@ -1,0 +1,5 @@
+{
+  "name": "Remix ShelbyPub main",
+  "description": "A decentralized media hub built on Shelby Protocol and Aptos, featuring a TikTok-style feed and gallery.",
+  "requestFramePermissions": []
+}
