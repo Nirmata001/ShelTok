@@ -2,14 +2,7 @@
 
 Decentralized short-form video platform built on the Shelby network. No centralized media server, no content database. Shelby is the entire backend.
 
-<p align="center">
-  <a href="https://sheltok.vercel.app/">
-    <img src="https://img.shields.io/badge/Live-Deployment-FE2C55?style=for-the-badge&logo=vercel" alt="Live App" />
-  </a>
-  <a href="https://x.com/Michelangelo_0_/status/2083247589932016082?s=20">
-    <img src="https://img.shields.io/badge/Demo-Video-1DA1F2?style=for-the-badge&logo=x" alt="Demo Video" />
-  </a>
-</p>
+**[Live App](https://sheltok.vercel.app/)** | **[Demo Video](https://x.com/Michelangelo_0_/status/2083247589932016082?s=20)**
 
 ---
 
