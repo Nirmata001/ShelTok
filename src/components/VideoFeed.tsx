@@ -205,34 +205,6 @@ const VideoItem = memo(({
     }
   };
 
-  const handleDownload = async () => {
-    try {
-      const downloadUrl = video.urls[0];
-      const response = await fetch(downloadUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      // Extract description from blob name and use as filename with .mp4 extension
-      const description = video.file_name?.split(':::')?.[1] || 'video';
-      const cleanName = description.trim() || 'sheltok-video';
-      a.download = `${cleanName}.mp4`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      onShowNotification('Download successful');
-    } catch (error) {
-      console.error('Download failed:', error);
-    }
-  };
-
-  const handleCopyLink = () => {
-    const shareUrl = `${window.location.origin}/watch/${video.wallet_address}/${video.file_name}`;
-    navigator.clipboard.writeText(shareUrl);
-    onShowNotification('Link copied to clipboard');
-  };
-
   const handleLoadedMetadata = () => {
     if (videoRef.current) {
       setDuration(videoRef.current.duration);
@@ -892,6 +864,12 @@ export default function VideoFeed({
     triggerNotification('Link copied to clipboard');
   };
 
+  const handleUsernameClick = (walletAddress: string, e: MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(walletAddress);
+    triggerNotification(`Copied creator wallet: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`);
+  };
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -1072,7 +1050,7 @@ export default function VideoFeed({
                   isMuted={isMuted}
                   onToggleMute={handleToggleMute}
                   onShowNotification={triggerNotification}
-                  onUsernameClick={() => {}}
+                  onUsernameClick={handleUsernameClick}
                   onLoaded={index === 0 ? onFirstVideoReady : undefined}
                   isLiked={!!likedVideos[video.id]}
                   likesCount={likesCount[video.id] || 0}
@@ -1104,22 +1082,6 @@ export default function VideoFeed({
       </AnimatePresence>
 
       <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes pink-glow-pulse {
-          0%, 100% {
-            box-shadow: 0 0 0 0 rgba(254, 44, 85, 0.6);
-            border-color: rgba(254, 44, 85, 0.4);
-            background-color: rgba(0, 0, 0, 0.6);
-          }
-          50% {
-            box-shadow: 0 0 0 14px rgba(254, 44, 85, 0);
-            border-color: rgba(254, 44, 85, 1);
-            background-color: rgba(254, 44, 85, 0.95);
-          }
-        }
-        .pink-mute-pulse {
-          animation: pink-glow-pulse 1.8s infinite cubic-bezier(0.4, 0, 0.2, 1);
-          border-width: 1.5px !important;
-        }
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
         }
