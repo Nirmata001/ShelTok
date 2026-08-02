@@ -1,135 +1,140 @@
-# SHELTOK
+# Sheltok
 
-**A decentralized, TikTok-style video feed built entirely on Shelby's hot storage network.**
-
-No centralized database for content. No traditional backend. Every video lives on Shelby, is fetched directly from Shelby, and is discoverable by anyone through Shelby alone.
+Decentralized short-form video platform built on the Shelby network. No centralized media server, no content database. Shelby is the entire backend.
 
 ---
 
-## What is SHELTOK?
+## Overview
 
-SHELTOK is a fully decentralized short-form video platform. Users connect a wallet, upload videos directly to the Shelby network, and scroll through a global, TikTok-style vertical feed — all without relying on any centralized media server or content database.
-
-Every video that exists on SHELTOK exists because it was uploaded to Shelby. Every video that appears in the feed appears because SHELTOK queried Shelby directly and found it. There is no separate "SHELTOK server" holding your videos — Shelby *is* the backend.
+Sheltok is a TikTok-style vertical video feed where every video is stored as a blob on Shelby and discovered by querying Shelby's coordination layer directly. There is no separate indexing service tracking what content exists, the blob registry itself is the content index.
 
 ---
 
-## How It All Fits Together
+## Architecture
 
-### 1. Upload — turning a video into a Shelby blob
+```
+Upload → Encode → Register on-chain (Aptos) → putBlob (Shelby RPC)
+                                                        │
+Feed  ← getBlobs (namespace filter) ← Shelby coordination layer
+                                                        │
+Playback ← byte-range requests ← Shelby testnet gateway
+```
 
-When a user selects a video file to upload, SHELTOK does not simply hand the raw file to Shelby. It constructs a specific **blob name** that encodes both a discovery tag and the video's caption directly into the filename itself:
+---
+
+## Blob Naming Convention
+
+Every upload is stored under a structured blob name that doubles as metadata, since Shelby has no separate metadata field:
 
 ```
 sheltok/{timestamp}_{randomId}.{extension}:::{description}
 ```
 
-For example:
+Example:
 
 ```
-sheltok/1781234567890_x7f3kd.mp4:::my first upload on shelby!
+sheltok/1781234567890_x7f3kd.mp4:::my first upload
 ```
 
-Breaking this down:
+| Segment | Purpose |
+|---|---|
+| `sheltok/` | Namespace prefix used to filter this app's content from all other blobs on the network |
+| `{timestamp}_{randomId}` | Collision-proof unique identifier |
+| `.{extension}` | Preserves file type for correct playback/download behavior |
+| `:::{description}` | Delimiter-separated caption, parsed client-side |
 
-- **`sheltok/`** — a namespace prefix. This is what allows SHELTOK's feed to later ask Shelby "give me every blob that belongs to this app" without needing any external index.
-- **`{timestamp}_{randomId}`** — guarantees a unique filename so two uploads never collide, even from the same wallet in the same second.
-- **`.{extension}`** — preserves the real file type (`.mp4`, `.mov` etc.) so the file remains previewable and downloadable correctly.
-- **`:::{description}`** — a delimiter followed by the caption the user typed. Shelby has no concept of "video metadata" as a separate field, so SHELTOK encodes the caption directly into the name of the blob itself. No external database required to know what a video is about.
-
-Once the blob name is constructed, the upload happens in three concrete steps against the Shelby SDK:
-
-1. **Encode** — the raw file is converted into commitment hashes via Shelby's erasure coding provider (`generateCommitments`)
-2. **Register on-chain** — a transaction is built (`createRegisterBlobPayload`) and signed by the connected wallet, registering the blob's existence, size, and 30-day expiration on the Aptos blockchain
-3. **Upload to Shelby RPC** — the actual video bytes are sent to Shelby's storage network via `putBlob`, using the exact blob name constructed above
-
-After this, the video exists as a real, addressable file on Shelby — permanently discoverable by anyone who knows the pattern.
-
----
-
-### 2. The Feed — fetching videos with zero external database
-
-This is the core of what makes SHELTOK different from a typical "Web3 video app." There is no Postgres table of video metadata. There is no API that lists videos. The feed works entirely by asking Shelby a single, direct question:
-
-> *"Show me every blob in existence whose name matches the SHELTOK naming pattern."*
-
-Concretely, SHELTOK queries Shelby's coordination layer with a filter like:
+The feed is populated with a single filtered query:
 
 ```
 blob_name ILIKE '%sheltok/%:::%'
 ```
 
-Any blob — from any wallet, uploaded at any time — that matches this pattern is a valid SHELTOK video. This single query is how the entire global feed is populated. There is no crawler, no indexer, no separate content service. Shelby's own blob registry *is* the content index.
-
-Once the raw list of matching blobs comes back, SHELTOK does the following for each one:
-
-- **Extracts the caption** from the `:::` delimiter in the blob name
-- **Extracts the owning wallet address** from the blob's `owner` field
-- **Constructs a playable URL** pointing directly at Shelby's public blob endpoint, scoped to that wallet and that blob name
-- **Shuffles the full list once** (Fisher-Yates) on first load so every viewer gets a naturally randomized, TikTok-like order — without needing a recommendation engine
-- **Lazy-loads video sources** — only the currently visible video and the next one in the feed actually have their `src` set at any given time, so scrolling through hundreds of videos never floods Shelby's network with simultaneous requests
-
-Playback itself is just a native HTML `<video>` element pointed at a Shelby blob URL — Shelby serves the bytes, the browser does the rest.
+Any blob on the network matching this pattern from any wallet is treated as valid Sheltok content.
 
 ---
 
-### 3. Following & Likes
+## Shelby Integration
 
-SHELTOK layers a lightweight social graph — follows and likes — on top of the Shelby-native content layer using Supabase purely for these relational, low-stakes interactions. Video content itself never touches Supabase; only "who follows whom" and "who liked what" live there, since these are fast-changing, high-frequency interactions that don't need to be permanently on-chain the way content ownership does.
+### 1. Storage — `putBlob`
+Video files are chunked and uploaded directly to Shelby RPC nodes via `shelbyClient.rpc.putBlob`, bypassing any centralized storage layer.
 
-The `Following` feed filter simply narrows the same Shelby-derived video list down to blobs whose owner address matches a wallet the current user follows — the discovery mechanism underneath is identical either way.
+### 2. Coordination & Indexing
+Using `@shelby-protocol/react` and `@shelby-protocol/sdk/browser`:
+- `coordination.getBlobs` — namespace-filtered query that powers the global feed
+- `coordination.getAccountBlobs` — wallet-scoped query used for the media gallery and profile views
+
+Both return live results directly from Shelby's indexer, no caching layer, no external database.
+
+### 3. Streaming
+All playback and gallery previews stream directly from Shelby's testnet gateway:
+```
+https://api.testnet.shelby.xyz/shelby/v1/blobs/
+```
+Video elements request content via native browser byte-range requests, no custom streaming server involved.
+
+### 4. On-Chain Registration & Deletion
+Transactions are built with `ShelbyBlobClient` payloads and signed via the Aptos Wallet Adapter (`signAndSubmitTransaction`). This governs both blob registration at upload time and deregistration on delete, ownership and content lifecycle are enforced on-chain, not by an app-level permission system.
 
 ---
 
-## Why This Architecture Matters
+## Upload Flow (3 steps)
 
-Most "decentralized" apps still quietly depend on a centralized database to know what content exists. If that database goes down, the app has no idea what to show — even if the actual files are still sitting untouched on decentralized storage.
-
-SHELTOK has no such single point of failure for its content layer. As long as Shelby is up:
-
-- Every previously uploaded video is still discoverable
-- The feed can always be rebuilt from scratch with one query
-- No one — including the SHELTOK team — can silently delete a video from the index, because there is no separate index to tamper with
-
-The naming convention *is* the metadata layer. Shelby *is* the content database.
+1. **Encode** — file converted to commitment hashes via Shelby's erasure coding provider (`generateCommitments`)
+2. **Register on-chain** — `createRegisterBlobPayload` builds a transaction (blob name, size, 30-day expiration), signed by the connected wallet
+3. **Push to RPC** — raw bytes uploaded via `putBlob` using the constructed blob name
 
 ---
 
-## Tech Stack
+## Feed Construction
 
-| Layer | Technology |
-|-------|-----------|
-| Storage & Content Discovery | Shelby Protocol (`@shelby-protocol/sdk`) |
-| Blockchain | Aptos Testnet |
-| Wallet | Aptos Wallet Adapter |
-| Social Graph (follows/likes) | Supabase |
-| Frontend | React + TypeScript + Vite |
-| Styling | Tailwind CSS |
+- Single `getBlobs` call with namespace filter returns every Sheltok video across all wallets
+- Results are shuffled once (Fisher-Yates) on first load — no reshuffling on refetch, avoiding UI disruption
+- Only the active video and the next one in scroll order have their `src` set at any time (lazy loading), preventing simultaneous request bursts against Shelby's gateway
+
+---
+
+## Social Layer (non-Shelby)
+
+Likes and follows are stored in Supabase, deliberately kept outside Shelby since these are high-frequency, low-stakes relational writes that don't need on-chain permanence. Video content and ownership remain entirely Shelby-native; Supabase never touches media.
+
+---
+
+## HLS / Adaptive Bitrate — Explored, Not Shipped
+
+Evaluated `@shelby-protocol/player` and `@shelby-protocol/media-prepare` for HLS output. Transcoding generates many segment files per video, and batch-uploading the full segment set to Shelby was too slow to be viable under current testnet conditions. Shipped with direct MP4 blob streaming via byte-range requests instead, which already performs well. HLS remains a candidate once batch upload throughput improves.
 
 ---
 
 ## Core Features
 
-- 🎥 **Global video feed** — sourced entirely from live Shelby blob queries, no content backend
-- ⬆️ **Direct-to-Shelby upload** — 3-step encode → register on-chain → push to RPC flow
-- 🔀 **Randomized discovery** — Fisher-Yates shuffle on first load, TikTok-style scroll
-- 👤 **Wallet-native identity** — no accounts, no passwords, your wallet is your identity
-- ❤️ **Likes & follows** — lightweight social layer on top of Shelby-native content
-- 🖼️ **Media gallery** — browse your own uploads with the same lazy-loading discovery pattern
-- 🗑️ **On-chain deletion** — remove a blob you own directly through the same wallet that created it
+- Global feed sourced from a single live Shelby query, no content backend
+- 3-step direct-to-Shelby upload (encode → register → push)
+- Fisher-Yates shuffle for TikTok-style randomized discovery
+- Wallet-native identity — no accounts, no passwords
+- Likes & follows (Supabase, non-media)
+- Media gallery scoped to connected wallet via `getAccountBlobs`
+- On-chain deletion — deregisters the blob via the owning wallet
 
 ---
 
-## Running Locally
+## Stack
+
+| Layer | Technology |
+|---|---|
+| Storage & indexing | Shelby (`@shelby-protocol/sdk`, `@shelby-protocol/react`) |
+| Chain | Aptos Testnet |
+| Wallet | Aptos Wallet Adapter |
+| Social graph | Supabase |
+| Frontend | React + TypeScript + Vite |
+| Styling | Tailwind CSS |
+
+---
+
+## Setup
 
 ```bash
 npm install
 cp .env.example .env
-# Add your Shelby API key and Supabase credentials to .env
-
+# add Shelby API key + Supabase credentials
 npm run dev
 ```
-
----
-
-*Built on Shelby — where the storage layer isn't just where your data lives, it's how your app knows what exists.*
