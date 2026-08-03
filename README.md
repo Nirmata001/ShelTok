@@ -9,7 +9,7 @@ Decentralized short-form video platform built on the Shelby network. No centrali
 ## Preview
 
 <p align="center">
-  <img src="./Screenshot%20(362).png" alt="Sheltok Frontend Screenshot" width="100%" max-width="800px" />
+  <img src="public/screenshot.png" alt="Sheltok Frontend Screenshot" width="100%" />
 </p>
 
 ---
