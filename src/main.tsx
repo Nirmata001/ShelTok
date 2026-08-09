@@ -19,6 +19,7 @@ const queryClient = new QueryClient({
 const shelbyClient = new ShelbyClient({
   network: Network.SHELBYNET,
   apiKey: import.meta.env.VITE_API_KEY,
+  locationHint: 'shelbynet-1',
 })
 
 createRoot(document.getElementById('root')!).render(

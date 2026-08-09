@@ -23,6 +23,15 @@ export const SHELBY_RPC_BASE = "https://shelby.shelbynet.shelby.xyz/shelby";
 export const SHELBY_EXPLORER_BASE = "https://explorer.shelby.xyz/shelbynet";
 
 /**
+ * Storage location for blob writes. shelbynet accounts start with no location
+ * preference set, so registration must supply one explicitly or the on-chain
+ * write aborts ("the write supplied no location input"). Passed as the
+ * authoritative `selectedLocation` on registration and as the client-wide
+ * `locationHint` so the RPC chunkset upload targets the same region.
+ */
+export const SHELBY_LOCATION = "shelbynet-1";
+
+/**
  * Builds the public byte-range URL for a stored blob. `owner` is the blob
  * owner's account address; `blobName` is the full name suffix (e.g.
  * "sheltok/123_abc.mp4:::caption").
@@ -44,6 +53,7 @@ export const aptosClient = new Aptos(
 export const shelbyClient = new ShelbyClient({
   network: Network.SHELBYNET,
   apiKey: import.meta.env.VITE_API_KEY,
+  locationHint: SHELBY_LOCATION,
 });
 
 /**
@@ -81,6 +91,7 @@ export const createRegisterBlobPayload = (
     expirationMicros: (1000 * 60 * 60 * 24 * 30 + Date.now()) * 1000, // 30 days from now
     blobSize: commitments.raw_data_size,
     encoding: 0, // Default encoding
+    selectedLocation: SHELBY_LOCATION,
   });
 };
 
