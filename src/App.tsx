@@ -9,7 +9,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AptosWalletAdapterProvider, useWallet } from '@aptos-labs/wallet-adapter-react';
 import { Network, AccountAddress } from '@aptos-labs/ts-sdk';
 import { ShelbyBlobClient } from '@shelby-protocol/sdk/browser';
-import { encodeFile, createRegisterBlobPayload, aptosClient, parseBlobUid, uploadBlobChunksets, createCommitPayload, buildBlobUrl, SHELBY_RPC_BASE, SHELBY_EXPLORER_BASE } from './services/shelbyService';
+import { encodeFile, createRegisterBlobPayload, aptosClient, parseBlobUid, uploadBlobChunksets, createCommitPayload, buildBlobUrl, shelbyAuthHeaders, SHELBY_RPC_BASE, SHELBY_EXPLORER_BASE } from './services/shelbyService';
 import { supabase, isSupabaseConfigured } from './services/supabase';
 import VideoFeed from './components/VideoFeed';
 import MediaGallery, { preloadMediaGalleryThumbnails } from './components/MediaGallery';
@@ -407,9 +407,9 @@ function ShelbyApp() {
     
     const walletAddress = account.address.toString();
     const downloadUrl = buildBlobUrl(walletAddress, filename);
-    
+
     try {
-      const response = await fetch(downloadUrl);
+      const response = await fetch(downloadUrl, { headers: shelbyAuthHeaders() });
       if (!response.ok) throw new Error('Download failed');
       
       const blob = await response.blob();
@@ -546,6 +546,8 @@ function ShelbyApp() {
             </div>
             <span className="text-xl font-black tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">SHELTOK</span>
           </div>
+
+
 
           {/* Messaging */}
           <h1 className="text-2xl font-extrabold tracking-tight mb-3 text-white leading-tight">
@@ -716,7 +718,7 @@ function ShelbyApp() {
             <div className="absolute inset-y-0 -left-[2px] right-[2px] bg-[#E11D48]/80 rounded-md opacity-100"></div>
             <div className="absolute inset-y-0 -right-[2px] left-[2px] bg-[#E11D48] rounded-md opacity-100"></div>
             <div className={`relative h-full w-full ${isVideoFeedOpen || isUploadPageOpen ? 'bg-white' : 'bg-on-surface'} rounded-md flex items-center justify-center`}>
-              <Add className={`w-5 h-5 ${isVideoFeedOpen || isUploadPageOpen ? 'text-black font-extrabold' : 'text-surface'} stroke-[4]`} />
+              <Add className={`w-5 h-5 ${isVideoFeedOpen || isUploadPageOpen ? 'text-black font-extrabold' : 'text-surface'} stroke-[4]`} strokeWidth={4} />
             </div>
           </div>
         </button>

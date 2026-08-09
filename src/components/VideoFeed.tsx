@@ -7,6 +7,7 @@ import {
   Film
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
+import { shelbyAuthHeaders } from '../services/shelbyService';
 
 interface VideoFeedProps {
   onClose: () => void;
@@ -71,13 +72,6 @@ const VideoItem = memo(({
   const seekBarRef = useRef<HTMLInputElement>(null);
   const animationFrameIdRef = useRef<number | null>(null);
 
-  // iOS Safari blob URL workaround
-  const isIOS = useMemo(() => {
-    if (typeof navigator === 'undefined') return false;
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  }, []);
-
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const blobUrlRef = useRef<string>('');
 
@@ -88,14 +82,11 @@ const VideoItem = memo(({
       return; 
     }
 
-    if (!isIOS) {
-      setVideoSrc(rawUrl);
-      return;
-    }
-
-    // iOS: fetch as blob to bypass Safari streaming requirements
+    // shelbynet gateway reads require the API key, and a native <video src>
+    // cannot send an Authorization header (anonymous reads get 429'd). Fetch the
+    // blob with auth on every platform and play it from an object URL.
     let cancelled = false;
-    fetch(rawUrl)
+    fetch(rawUrl, { headers: shelbyAuthHeaders() })
       .then(r => {
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.arrayBuffer();
@@ -109,12 +100,20 @@ const VideoItem = memo(({
         setVideoSrc(newBlobUrl);
       })
       .catch((err) => {
-        console.error('iOS Blob Fetch Error:', err);
-        if (!cancelled) setVideoSrc(rawUrl);
+        if (cancelled) return;
+        // Advance through the remaining gateway URL variants before giving up.
+        if (urlIndex < video.urls.length - 1) {
+          console.warn(`Gateway ${urlIndex} fetch failed, trying next...`, err);
+          setUrlIndex(prev => prev + 1);
+        } else {
+          console.error('All gateways failed for video:', video.rawName);
+          setHasError(true);
+          if (onLoaded) onLoaded();
+        }
       });
 
     return () => { cancelled = true; };
-  }, [shouldLoad, urlIndex, isIOS, video.urls]);
+  }, [shouldLoad, urlIndex, video.urls]);
 
   // Cleanup blob URL on unmount
   useEffect(() => () => {
@@ -837,7 +836,7 @@ export default function VideoFeed({
     if (!video) return;
     try {
       const downloadUrl = video.urls[0];
-      const response = await fetch(downloadUrl);
+      const response = await fetch(downloadUrl, { headers: shelbyAuthHeaders() });
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');

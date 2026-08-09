@@ -10,7 +10,7 @@ import {
   Trash2,
   CheckCircle
 } from 'lucide-react';
-import { buildBlobUrl } from '../services/shelbyService';
+import { buildBlobUrl, fetchBlobObjectUrl, shelbyAuthHeaders } from '../services/shelbyService';
 
 interface MediaGalleryProps {
   blobs: any[];
@@ -59,10 +59,8 @@ export function preloadMediaGalleryThumbnails(blobs: any[], walletAddress: strin
       // Mark as loading to prevent duplicate preloads
       thumbnailCache[cacheKey] = 'loading';
       
-      const mediaUrl = buildBlobUrl(walletAddress, fileName);
       const video = document.createElement('video');
-      video.src = mediaUrl;
-      video.crossOrigin = 'anonymous';
+      let objectUrl = '';
       video.muted = true;
       video.playsInline = true;
       video.currentTime = 0.1;
@@ -89,7 +87,7 @@ export function preloadMediaGalleryThumbnails(blobs: any[], walletAddress: strin
         }
         cleanup();
       };
-      
+
       const handleError = () => {
         thumbnailCache[cacheKey] = '';
         cleanup();
@@ -99,11 +97,17 @@ export function preloadMediaGalleryThumbnails(blobs: any[], walletAddress: strin
         video.removeEventListener('loadeddata', handleLoadedData);
         video.removeEventListener('seeked', handleSeeked);
         video.removeEventListener('error', handleError);
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
       };
 
       video.addEventListener('loadeddata', handleLoadedData);
       video.addEventListener('seeked', handleSeeked);
       video.addEventListener('error', handleError);
+
+      // shelbynet 429s anonymous reads; fetch with auth and draw from a blob URL.
+      fetchBlobObjectUrl(walletAddress, fileName)
+        .then(url => { objectUrl = url; video.src = url; })
+        .catch(() => { handleError(); });
     }
   });
 }
@@ -112,7 +116,6 @@ const MediaItem = ({ blob, walletAddress, onDownload, onDelete }: MediaItemProps
   const fileName = blob.blobNameSuffix || '';
   const extension = getFileExtension(fileName);
   const isVideo = VIDEO_EXTENSIONS.includes(extension);
-  const mediaUrl = buildBlobUrl(walletAddress, fileName);
 
   const cacheKey = blob.id || fileName;
   const isCached = thumbnailCache[cacheKey] && thumbnailCache[cacheKey].startsWith('data:');
@@ -133,6 +136,27 @@ const MediaItem = ({ blob, walletAddress, onDownload, onDelete }: MediaItemProps
 
   const [isHovered, setIsHovered] = useState(false);
 
+  // Authenticated object URL for the raw media (shelbynet 429s anonymous reads,
+  // and <video>/<img> src can't carry an auth header). Fetched once, revoked on
+  // unmount; used for both the hover preview and thumbnail generation.
+  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    let objectUrl = '';
+    fetchBlobObjectUrl(walletAddress, fileName)
+      .then(url => {
+        if (cancelled) { URL.revokeObjectURL(url); return; }
+        objectUrl = url;
+        setMediaUrl(url);
+      })
+      .catch(() => { if (!cancelled) setIsLoading(false); });
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [walletAddress, fileName]);
+
   useEffect(() => {
     const currentCached = thumbnailCache[cacheKey];
     if (currentCached && currentCached.startsWith('data:')) {
@@ -147,9 +171,9 @@ const MediaItem = ({ blob, walletAddress, onDownload, onDelete }: MediaItemProps
     }
 
     if (isVideo) {
+      if (!mediaUrl) return; // wait for the authenticated object URL
       const video = document.createElement('video');
       video.src = mediaUrl;
-      video.crossOrigin = 'anonymous';
       video.muted = true;
       video.playsInline = true;
       video.currentTime = 0.1;
@@ -212,13 +236,13 @@ const MediaItem = ({ blob, walletAddress, onDownload, onDelete }: MediaItemProps
 
       {isVideo ? (
         <>
-          {isHovered ? (
-            <video 
-              src={mediaUrl} 
-              autoPlay 
-              muted 
-              loop 
-              playsInline 
+          {isHovered && mediaUrl ? (
+            <video
+              src={mediaUrl}
+              autoPlay
+              muted
+              loop
+              playsInline
               className="w-full h-full object-cover"
             />
           ) : thumbnail ? (
@@ -242,14 +266,16 @@ const MediaItem = ({ blob, walletAddress, onDownload, onDelete }: MediaItemProps
           )}
         </>
       ) : (
-        <img 
-          src={mediaUrl} 
-          alt={fileName} 
-          className="w-full h-full object-cover"
-          onLoad={() => setIsLoading(false)}
-          onError={() => setIsLoading(false)}
-          referrerPolicy="no-referrer"
-        />
+        mediaUrl && (
+          <img
+            src={mediaUrl}
+            alt={fileName}
+            className="w-full h-full object-cover"
+            onLoad={() => setIsLoading(false)}
+            onError={() => setIsLoading(false)}
+            referrerPolicy="no-referrer"
+          />
+        )
       )}
       
       <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex justify-end items-center gap-2 z-10">
@@ -308,7 +334,7 @@ export default function MediaGallery({
     const fileName = blob.blobNameSuffix;
     const url = buildBlobUrl(walletAddress, fileName);
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, { headers: shelbyAuthHeaders() });
       const data = await response.blob();
       const blobUrl = window.URL.createObjectURL(data);
       const link = document.createElement('a');

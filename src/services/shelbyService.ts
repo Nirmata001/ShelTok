@@ -39,6 +39,32 @@ export const SHELBY_LOCATION = "shelbynet-1";
 export const buildBlobUrl = (owner: string, blobName: string): string =>
   `${SHELBY_RPC_BASE}/v1/blobs/${owner}/${blobName}`;
 
+const SHELBY_API_KEY = import.meta.env.VITE_API_KEY as string | undefined;
+
+/**
+ * Auth headers for direct gateway blob reads. shelbynet rate-limits (429)
+ * unauthenticated reads, and native <video>/<img> `src` cannot carry headers —
+ * so blobs must be fetched with these headers and rendered via object URLs.
+ */
+export const shelbyAuthHeaders = (): Record<string, string> =>
+  SHELBY_API_KEY ? { Authorization: `Bearer ${SHELBY_API_KEY}` } : {};
+
+/**
+ * Fetches a stored blob with auth and returns an object URL suitable for a
+ * <video>/<img> `src`. The caller owns the returned URL and must revoke it with
+ * URL.revokeObjectURL when done to avoid leaking memory.
+ */
+export const fetchBlobObjectUrl = async (
+  owner: string,
+  blobName: string
+): Promise<string> => {
+  const res = await fetch(buildBlobUrl(owner, blobName), {
+    headers: shelbyAuthHeaders(),
+  });
+  if (!res.ok) throw new Error(`Failed to fetch blob: ${res.status}`);
+  return URL.createObjectURL(await res.blob());
+};
+
 // Initialize Aptos client
 export const aptosClient = new Aptos(
   new AptosConfig({
