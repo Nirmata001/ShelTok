@@ -7,7 +7,7 @@ import {
   Film
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
-import { shelbyAuthHeaders } from '../services/shelbyService';
+import { shelbyAuthHeaders, isShelbySWReady } from '../services/shelbyService';
 
 interface VideoFeedProps {
   onClose: () => void;
@@ -77,40 +77,62 @@ const VideoItem = memo(({
 
   useEffect(() => {
     const rawUrl = shouldLoad ? (video.urls[urlIndex] ?? '') : '';
-    if (!rawUrl) { 
-      setVideoSrc(null); 
-      return; 
+    if (!rawUrl) {
+      setVideoSrc(null);
+      return;
     }
 
     // shelbynet gateway reads require the API key, and a native <video src>
-    // cannot send an Authorization header (anonymous reads get 429'd). Fetch the
-    // blob with auth on every platform and play it from an object URL.
+    // cannot send an Authorization header (anonymous reads get 429'd).
+    //
+    // When our service worker controls the page it transparently authenticates
+    // every gateway request — including the byte-range requests <video> issues
+    // — so we can bind the raw URL directly and get native progressive
+    // streaming + seeking. Otherwise (dev, or SW not yet controlling) we fall
+    // back to fetching the whole blob with auth and playing it from an object
+    // URL.
     let cancelled = false;
-    fetch(rawUrl, { headers: shelbyAuthHeaders() })
-      .then(r => {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.arrayBuffer();
-      })
-      .then(buffer => {
-        if (cancelled) return;
-        const blob = new Blob([buffer], { type: 'video/mp4' });
-        const newBlobUrl = URL.createObjectURL(blob);
-        if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
-        blobUrlRef.current = newBlobUrl;
-        setVideoSrc(newBlobUrl);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        // Advance through the remaining gateway URL variants before giving up.
-        if (urlIndex < video.urls.length - 1) {
-          console.warn(`Gateway ${urlIndex} fetch failed, trying next...`, err);
-          setUrlIndex(prev => prev + 1);
-        } else {
-          console.error('All gateways failed for video:', video.rawName);
-          setHasError(true);
-          if (onLoaded) onLoaded();
+
+    isShelbySWReady().then(swReady => {
+      if (cancelled) return;
+
+      if (swReady) {
+        // Native streaming: the SW adds auth to the video element's requests.
+        // A failed load advances the gateway variant via the <video> onError.
+        if (blobUrlRef.current) {
+          URL.revokeObjectURL(blobUrlRef.current);
+          blobUrlRef.current = '';
         }
-      });
+        setVideoSrc(rawUrl);
+        return;
+      }
+
+      fetch(rawUrl, { headers: shelbyAuthHeaders() })
+        .then(r => {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.arrayBuffer();
+        })
+        .then(buffer => {
+          if (cancelled) return;
+          const blob = new Blob([buffer], { type: 'video/mp4' });
+          const newBlobUrl = URL.createObjectURL(blob);
+          if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
+          blobUrlRef.current = newBlobUrl;
+          setVideoSrc(newBlobUrl);
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          // Advance through the remaining gateway URL variants before giving up.
+          if (urlIndex < video.urls.length - 1) {
+            console.warn(`Gateway ${urlIndex} fetch failed, trying next...`, err);
+            setUrlIndex(prev => prev + 1);
+          } else {
+            console.error('All gateways failed for video:', video.rawName);
+            setHasError(true);
+            if (onLoaded) onLoaded();
+          }
+        });
+    });
 
     return () => { cancelled = true; };
   }, [shouldLoad, urlIndex, video.urls]);

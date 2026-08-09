@@ -31,7 +31,11 @@ export default defineConfig(({mode}) => {
         },
       }),
       VitePWA({
+        strategies: 'injectManifest',
+        srcDir: 'src',
+        filename: 'sw.ts',
         registerType: 'autoUpdate',
+        injectRegister: null,
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
         manifest: {
           name: 'ShelbyPub',
@@ -64,23 +68,13 @@ export default defineConfig(({mode}) => {
             }
           ]
         },
-        workbox: {
+        injectManifest: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,wasm}'],
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-          runtimeCaching: [
-            {
-              urlPattern: /^https:\/\/api\.testnet\.shelby\.xyz\/.*/i,
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'shelby-api-cache',
-                expiration: {
-                  maxEntries: 100,
-                  maxAgeSeconds: 60 * 60 * 24
-                }
-              }
-            }
-          ]
-        }
+        },
+        devOptions: {
+          enabled: false,
+        },
       })
     ],
     optimizeDeps: {
@@ -98,7 +92,7 @@ export default defineConfig(({mode}) => {
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
+      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
     },
   };

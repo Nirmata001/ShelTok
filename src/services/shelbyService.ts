@@ -9,7 +9,68 @@ import {
   ShelbyClient,
   SHELBY_DEPLOYER,
 } from "@shelby-protocol/sdk/browser";
+import { registerSW } from "virtual:pwa-register";
 import { Aptos, AptosConfig, Network, AccountAddress } from "@aptos-labs/ts-sdk";
+
+// The app's own service worker (src/sw.ts, vite-plugin-pwa injectManifest)
+// intercepts gateway blob requests and injects the auth header, which enables
+// native byte-range streaming from <video>/<img>. In dev there is no SW, so
+// callers must gate streaming on this promise before binding raw gateway URLs.
+let swReady: Promise<boolean> | null = null;
+
+// Time to wait for a freshly-registered SW to take control of the page before
+// giving up and using the fetch->blob fallback for this session.
+const SW_CONTROL_TIMEOUT_MS = 5000;
+
+/**
+ * Resolves true once the Shelby auth service worker controls this page. Once it
+ * controls, every gateway request the browser makes (including the byte-range
+ * requests a <video> element issues) is transparently authenticated by the SW.
+ *
+ * Streaming callers (feed video, gallery previews/thumbnails) check this before
+ * binding a raw gateway URL to <video>/<img>; until it resolves true they fall
+ * back to authenticated fetch + object URLs. It resolves false when there is no
+ * SW support, in dev (SW disabled), or if the SW doesn't take control in time.
+ */
+export const isShelbySWReady = (): Promise<boolean> => {
+  if (swReady) return swReady;
+
+  if (!("serviceWorker" in navigator)) {
+    swReady = Promise.resolve(false);
+    return swReady;
+  }
+
+  swReady = new Promise<boolean>((resolve) => {
+    let settled = false;
+    const done = (value: boolean) => {
+      if (settled) return;
+      settled = true;
+      resolve(value);
+    };
+
+    // Already controlled from a previous load — good to stream immediately.
+    if (navigator.serviceWorker.controller) {
+      done(true);
+      return;
+    }
+
+    // registerSW (autoUpdate) registers and activates; controllerchange fires
+    // once it takes control of this page.
+    registerSW({ immediate: true });
+
+    navigator.serviceWorker.addEventListener("controllerchange", () =>
+      done(!!navigator.serviceWorker.controller)
+    );
+    // Also resolve if control is established without a change event we caught.
+    navigator.serviceWorker.ready.then((reg) => {
+      if (reg.active && navigator.serviceWorker.controller) done(true);
+    });
+
+    window.setTimeout(() => done(false), SW_CONTROL_TIMEOUT_MS);
+  });
+
+  return swReady;
+};
 
 /**
  * Shelby network endpoints.
