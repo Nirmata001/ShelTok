@@ -261,7 +261,13 @@ const VideoItem = memo(({
       <div className="flex items-end md:space-x-4 space-x-0 justify-center relative w-full h-full max-h-[calc(100vh-25px)]">
         
         {/* Video Card Container */}
-        <div className="video-container bg-tiktok-dark rounded-xl overflow-hidden relative flex items-center justify-center border-0 md:border border-white/10 w-full md:w-[320px] xl:w-[400px] h-full shadow-2xl relative">
+        <div className={`video-container bg-tiktok-dark rounded-xl overflow-hidden relative flex items-center justify-center border-0 md:border border-white/10 h-full shadow-2xl relative transition-all duration-300 ${
+          aspectRatio === 'landscape' 
+            ? 'w-full md:w-[640px] lg:w-[720px] xl:w-[800px]' 
+            : aspectRatio === 'square' 
+              ? 'w-full md:w-[440px] lg:w-[480px] xl:w-[520px]' 
+              : 'w-full md:w-[320px] xl:w-[400px]'
+        }`}>
           {shouldLoad ? (
             <>
               {(!isLoaded && !hasError) && (
@@ -277,7 +283,9 @@ const VideoItem = memo(({
                 <video
                   ref={videoRef}
                   src={videoSrc || undefined}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className={`absolute inset-0 w-full h-full ${
+                    aspectRatio === 'portrait' ? 'object-cover' : 'object-contain bg-black'
+                  }`}
                   loop
                   muted={isMuted}
                   playsInline
@@ -295,6 +303,25 @@ const VideoItem = memo(({
                   onLoadedMetadata={handleLoadedMetadata}
                   onError={handleError}
                 />
+              )}
+
+              {/* TikTok style Mute Button (Top-Left of Video Card) */}
+              {!hasError && (
+                <button
+                  onClick={onToggleMute}
+                  className="absolute top-4 left-4 z-40 w-10 h-10 rounded-full bg-transparent hover:bg-white/15 border border-transparent hover:border-white/20 drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)] transition-all duration-200 pointer-events-auto flex items-center justify-center text-white cursor-pointer hover:scale-105 active:scale-95"
+                  aria-label={isMuted ? "Unmute" : "Mute"}
+                >
+                  {isMuted ? (
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6L4.5 9H1.5v6h3l4.5 3.75V5.25z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+                    </svg>
+                  )}
+                </button>
               )}
 
               {/* Seek Bar */}
@@ -396,28 +423,7 @@ const VideoItem = memo(({
             <span className="text-xs font-bold mt-1 text-white/90">{likesCount || "0"}</span>
           </div>
 
-          {/* Mute/Volume (in place of comments) */}
-          <div className="flex flex-col items-center group">
-            <button 
-              onClick={onToggleMute}
-              className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition active:scale-90 ${
-                isMuted 
-                  ? 'bg-tiktok-red/20 text-tiktok-red border border-tiktok-red/30' 
-                  : 'bg-white/10 text-white hover:bg-white/20'
-              }`}
-            >
-              {isMuted ? (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6L4.5 9H1.5v6h3l4.5 3.75V5.25z" />
-                </svg>
-              ) : (
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
-                </svg>
-              )}
-            </button>
-            <span className="text-[10px] font-bold mt-1 text-white/60">{isMuted ? 'MUTE' : 'SOUND'}</span>
-          </div>
+
 
           {/* Download */}
           <div className="flex flex-col items-center group">
@@ -500,28 +506,7 @@ const VideoItem = memo(({
             <span className="text-[10px] font-bold mt-0.5 text-white drop-shadow-md">{likesCount || "0"}</span>
           </div>
 
-          {/* Mobile Mute */}
-          <div className="flex flex-col items-center">
-            <button 
-              onClick={onToggleMute}
-              className={`w-11 h-11 rounded-full flex items-center justify-center cursor-pointer transition active:scale-90 ${
-                isMuted 
-                  ? 'bg-tiktok-red text-white shadow-lg' 
-                  : 'bg-black/40 text-white backdrop-blur-md border border-white/10'
-              }`}
-            >
-              {isMuted ? (
-                <svg className="w-5.5 h-5.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6L4.5 9H1.5v6h3l4.5 3.75V5.25z" />
-                </svg>
-              ) : (
-                <svg className="w-5.5 h-5.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
-                </svg>
-              )}
-            </button>
-            <span className="text-[9px] font-bold mt-0.5 text-white drop-shadow-md">{isMuted ? 'MUTED' : 'SOUND'}</span>
-          </div>
+
 
           {/* Mobile Download */}
           <button 
@@ -1042,7 +1027,7 @@ export default function VideoFeed({
         </div>
       ) : (
         <>
-          <div className={`relative flex ${isEmbedded ? 'h-full' : 'h-[calc(100dvh-64px)] md:h-[100dvh]'} w-full md:max-w-[400px] xl:max-w-[480px] flex-col overflow-y-scroll overflow-x-hidden snap-y snap-mandatory scrollbar-none outline-none overflow-hidden`} ref={containerRef} style={{
+          <div className={`relative flex ${isEmbedded ? 'h-full' : 'h-[calc(100dvh-64px)] md:h-[100dvh]'} w-full md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1000px] flex-col overflow-y-scroll overflow-x-hidden snap-y snap-mandatory scrollbar-none outline-none overflow-hidden`} ref={containerRef} style={{
             scrollSnapType: 'y mandatory',
             overflowY: 'scroll',
             scrollbarWidth: 'none',

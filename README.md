@@ -27,7 +27,7 @@ Upload → Encode → Register (Aptos) → putBlobChunksets (RPC) → commitObje
                                                         │
 Feed  ← getBlobs (namespace filter) ← Shelby coordination layer
                                                         │
-Playback ← byte-range requests ← Shelby shelbynet gateway
+Playback ← authenticated byte-range requests (service worker) ← shelbynet gateway
 ```
 
 ---
@@ -76,11 +76,13 @@ Using `@shelby-protocol/react` and `@shelby-protocol/sdk/browser`:
 Both return live results directly from Shelby's indexer, no caching layer, no external database.
 
 ### 3. Streaming
-All playback and gallery previews stream directly from Shelby's shelbynet gateway:
+All playback streams directly from Shelby's shelbynet gateway:
 ```
 https://shelby.shelbynet.shelby.xyz/shelby/v1/blobs/
 ```
-Video elements request content via native browser byte-range requests, no custom streaming server involved.
+shelbynet requires `Authorization: Bearer <apiKey>` on gateway reads and rate-limits (429) anonymous ones — but a native `<video>`/`<img>` `src` can't attach headers. A service worker ([src/sw.ts](src/sw.ts)) intercepts gateway blob requests and injects the auth header while preserving the `Range` header, so video elements keep issuing native byte-range requests and get authenticated progressive streaming with no custom streaming server.
+
+The service worker only runs in production builds (`npm run build` + `npm run preview`), not the dev server. In dev — and until the worker takes control on first load — playback falls back to an authenticated `fetch` + object URL. The media gallery stays on that fetch path by design: its thumbnails draw frames to a `<canvas>`, which requires same-origin (object-URL) pixels to avoid tainting.
 
 ### 4. On-Chain Registration & Deletion
 Transactions are built with `ShelbyBlobClient` payloads and signed via the Aptos Wallet Adapter (`signAndSubmitTransaction`). This governs both blob registration at upload time and deregistration on delete, ownership and content lifecycle are enforced on-chain, not by an app-level permission system.
@@ -148,4 +150,13 @@ npm install
 cp .env.example .env
 # add Shelby API key + Supabase credentials
 npm run dev
+```
+
+`VITE_API_KEY` must be an Aptos Build key provisioned for shelbynet (format `AG-***`) — gateway reads 429 without it. The key is inlined into both the app bundle and the service worker at build time, so rebuild after changing it.
+
+To exercise authenticated byte-range streaming (the service worker), run a production build rather than the dev server:
+
+```bash
+npm run build
+npm run preview
 ```
