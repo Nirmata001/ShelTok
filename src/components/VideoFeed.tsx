@@ -258,15 +258,19 @@ const VideoItem = memo(({
 
   return (
     <div className="relative h-full w-full bg-black flex items-center justify-center md:py-1 overflow-hidden snap-start">
-      <div className="flex items-end md:space-x-4 space-x-0 justify-center relative w-full h-full max-h-[calc(100vh-25px)]">
+      <div className={`flex md:space-x-4 space-x-0 justify-center items-end relative transition-all duration-300 ${
+        aspectRatio === 'portrait' 
+          ? 'w-full h-full max-h-[calc(100vh-25px)]' 
+          : 'w-full h-auto max-h-[calc(100vh-25px)]'
+      }`}>
         
         {/* Video Card Container */}
-        <div className={`video-container bg-tiktok-dark rounded-xl overflow-hidden relative flex items-center justify-center border-0 md:border border-white/10 h-full shadow-2xl relative transition-all duration-300 ${
+        <div className={`video-container bg-tiktok-dark rounded-xl overflow-hidden relative flex items-center justify-center border-0 md:border border-white/10 shadow-2xl relative transition-all duration-300 ${
           aspectRatio === 'landscape' 
-            ? 'w-full md:w-[640px] lg:w-[720px] xl:w-[800px]' 
+            ? 'w-full md:w-[640px] lg:w-[720px] xl:w-[800px] aspect-[16/9] h-auto max-h-[calc(100vh-25px)]' 
             : aspectRatio === 'square' 
-              ? 'w-full md:w-[440px] lg:w-[480px] xl:w-[520px]' 
-              : 'w-full md:w-[320px] xl:w-[400px]'
+              ? 'w-full md:w-[440px] lg:w-[480px] xl:w-[520px] aspect-square h-auto max-h-[calc(100vh-25px)]' 
+              : 'w-full md:w-[320px] xl:w-[400px] h-full'
         }`}>
           {shouldLoad ? (
             <>
@@ -283,9 +287,7 @@ const VideoItem = memo(({
                 <video
                   ref={videoRef}
                   src={videoSrc || undefined}
-                  className={`absolute inset-0 w-full h-full ${
-                    aspectRatio === 'portrait' ? 'object-cover' : 'object-contain bg-black'
-                  }`}
+                  className="absolute inset-0 w-full h-full object-cover"
                   loop
                   muted={isMuted}
                   playsInline
