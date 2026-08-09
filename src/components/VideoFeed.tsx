@@ -267,7 +267,7 @@ const VideoItem = memo(({
         {/* Video Card Container */}
         <div className={`video-container bg-tiktok-dark rounded-xl overflow-hidden relative flex items-center justify-center border-0 md:border border-white/10 shadow-2xl relative transition-all duration-300 ${
           aspectRatio === 'landscape' 
-            ? 'w-full md:w-[640px] lg:w-[720px] xl:w-[800px] aspect-[16/9] h-auto max-h-[calc(100vh-25px)]' 
+            ? 'w-full md:w-[720px] lg:w-[820px] xl:w-[900px] aspect-[16/9] h-auto max-h-[calc(100vh-25px)]' 
             : aspectRatio === 'square' 
               ? 'w-full md:w-[440px] lg:w-[480px] xl:w-[520px] aspect-square h-auto max-h-[calc(100vh-25px)]' 
               : 'w-full md:w-[320px] xl:w-[400px] h-full'
@@ -1029,7 +1029,7 @@ export default function VideoFeed({
         </div>
       ) : (
         <>
-          <div className={`relative flex ${isEmbedded ? 'h-full' : 'h-[calc(100dvh-64px)] md:h-[100dvh]'} w-full md:max-w-[800px] lg:max-w-[900px] xl:max-w-[1000px] flex-col overflow-y-scroll overflow-x-hidden snap-y snap-mandatory scrollbar-none outline-none overflow-hidden`} ref={containerRef} style={{
+          <div className={`relative flex ${isEmbedded ? 'h-full' : 'h-[calc(100dvh-64px)] md:h-[100dvh]'} w-full md:max-w-[880px] lg:max-w-[1000px] xl:max-w-[1100px] flex-col overflow-y-scroll overflow-x-hidden snap-y snap-mandatory scrollbar-none outline-none overflow-hidden`} ref={containerRef} style={{
             scrollSnapType: 'y mandatory',
             overflowY: 'scroll',
             scrollbarWidth: 'none',
