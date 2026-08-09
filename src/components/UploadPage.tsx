@@ -71,7 +71,7 @@ const UploadPage: React.FC<UploadPageProps> = ({
           <div className="flex flex-col gap-2 max-w-md">
             <h2 className="text-xl font-bold tracking-tight">Wallet Connection Required</h2>
             <p className="text-sm text-white/40 leading-relaxed">
-              ShelTok registered items are verified transactions on the Aptos Testnet. Connect your wallet to access secure distributed streaming and decentralized upload features.
+              ShelTok registered items are verified transactions on Shelbynet. Connect your wallet to access secure distributed streaming and decentralized upload features.
             </p>
           </div>
          </motion.div>

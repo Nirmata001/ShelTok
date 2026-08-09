@@ -17,7 +17,7 @@ const queryClient = new QueryClient({
 })
 
 const shelbyClient = new ShelbyClient({
-  network: Network.TESTNET,
+  network: Network.SHELBYNET,
   apiKey: import.meta.env.VITE_API_KEY,
 })
 

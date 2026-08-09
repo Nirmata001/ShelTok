@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  X, 
-  Download, 
-  Play, 
-  Image as ImageIcon, 
-  Film, 
-  ChevronLeft, 
-  Trash2, 
-  CheckCircle 
+import {
+  X,
+  Download,
+  Play,
+  Image as ImageIcon,
+  Film,
+  ChevronLeft,
+  Trash2,
+  CheckCircle
 } from 'lucide-react';
+import { buildBlobUrl } from '../services/shelbyService';
 
 interface MediaGalleryProps {
   blobs: any[];
@@ -58,7 +59,7 @@ export function preloadMediaGalleryThumbnails(blobs: any[], walletAddress: strin
       // Mark as loading to prevent duplicate preloads
       thumbnailCache[cacheKey] = 'loading';
       
-      const mediaUrl = `https://api.testnet.shelby.xyz/shelby/v1/blobs/${walletAddress}/${fileName}`;
+      const mediaUrl = buildBlobUrl(walletAddress, fileName);
       const video = document.createElement('video');
       video.src = mediaUrl;
       video.crossOrigin = 'anonymous';
@@ -111,7 +112,7 @@ const MediaItem = ({ blob, walletAddress, onDownload, onDelete }: MediaItemProps
   const fileName = blob.blobNameSuffix || '';
   const extension = getFileExtension(fileName);
   const isVideo = VIDEO_EXTENSIONS.includes(extension);
-  const mediaUrl = `https://api.testnet.shelby.xyz/shelby/v1/blobs/${walletAddress}/${fileName}`;
+  const mediaUrl = buildBlobUrl(walletAddress, fileName);
 
   const cacheKey = blob.id || fileName;
   const isCached = thumbnailCache[cacheKey] && thumbnailCache[cacheKey].startsWith('data:');
@@ -305,7 +306,7 @@ export default function MediaGallery({
 
   const handleDownload = async (blob: any) => {
     const fileName = blob.blobNameSuffix;
-    const url = `https://api.testnet.shelby.xyz/shelby/v1/blobs/${walletAddress}/${fileName}`;
+    const url = buildBlobUrl(walletAddress, fileName);
     try {
       const response = await fetch(url);
       const data = await response.blob();

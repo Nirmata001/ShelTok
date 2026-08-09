@@ -9,7 +9,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AptosWalletAdapterProvider, useWallet } from '@aptos-labs/wallet-adapter-react';
 import { Network, AccountAddress } from '@aptos-labs/ts-sdk';
 import { ShelbyBlobClient } from '@shelby-protocol/sdk/browser';
-import { encodeFile, createRegisterBlobPayload, aptosClient, uploadBlobToRpc } from './services/shelbyService';
+import { encodeFile, createRegisterBlobPayload, aptosClient, parseBlobUid, uploadBlobChunksets, createCommitPayload, buildBlobUrl, SHELBY_RPC_BASE, SHELBY_EXPLORER_BASE } from './services/shelbyService';
 import { supabase, isSupabaseConfigured } from './services/supabase';
 import VideoFeed from './components/VideoFeed';
 import MediaGallery, { preloadMediaGalleryThumbnails } from './components/MediaGallery';
@@ -68,14 +68,13 @@ function ShelbyApp() {
     queryFn: async () => {
       return await shelbyClient.coordination.getBlobs({
         where: {
-          is_written: { _eq: 1 as any },
           _or: [
-            { blob_name: { _ilike: '%shelbypub/%:::%' } },
-            { blob_name: { _ilike: '%sheltok/%:::%' } }
+            { object_name: { _ilike: '%shelbypub/%:::%' } },
+            { object_name: { _ilike: '%sheltok/%:::%' } }
           ]
         },
         pagination: { limit: 100 },
-        orderBy: [{ updated_at: Order_By.Desc }] as any
+        orderBy: { updated_at: Order_By.Desc }
       });
     },
     refetchInterval: 30000,
@@ -96,7 +95,7 @@ function ShelbyApp() {
       if ((!fullBlobName.includes('shelbypub/') && !fullBlobName.includes('sheltok/')) || !fullBlobName.includes(':::')) return null;
       const descParts = fullBlobName.split(':::');
       const description = descParts[1] || '';
-      const gateways = ['https://api.testnet.shelby.xyz/shelby'];
+      const gateways = [SHELBY_RPC_BASE];
       const variants = [owner];
       if (owner.startsWith('0x')) {
         const clean = owner.replace(/^0x/, '');
@@ -349,24 +348,45 @@ function ShelbyApp() {
       const blobName = `sheltok/${timestamp}_${randomId}.${fileExt}:::${description}`;
       
       const commitments = await encodeFile(selectedFile);
-      const payload = createRegisterBlobPayload(
+
+      // 1. Register the blob on-chain (wallet signs).
+      const registerPayload = createRegisterBlobPayload(
         account.address.toString(),
         blobName,
         commitments
       );
 
-      const transactionSubmitted = await (signAndSubmitTransaction as any)({
-        data: payload,
+      const registerTx = await (signAndSubmitTransaction as any)({
+        data: registerPayload,
       });
 
+      const registerResult = await aptosClient.waitForTransaction({
+        transactionHash: registerTx.hash,
+      });
+
+      // 2. Recover the on-chain UID assigned to this blob.
+      const uid = parseBlobUid((registerResult as any).events, blobName);
+
+      // 3. Upload the raw bytes as erasure-coded chunksets (address-authorized).
+      const spAcks = await uploadBlobChunksets(
+        account.address.toString(),
+        selectedFile,
+        uid,
+        commitments
+      );
+
+      // 4. Commit the write on-chain to finalize it (wallet signs).
+      const commitPayload = createCommitPayload(uid, blobName, spAcks);
+      const commitTx = await (signAndSubmitTransaction as any)({
+        data: commitPayload,
+      });
       await aptosClient.waitForTransaction({
-        transactionHash: transactionSubmitted.hash,
+        transactionHash: commitTx.hash,
       });
 
-      await uploadBlobToRpc(account.address.toString(), selectedFile, blobName);
       await fetchBlobs();
 
-      setExplorerLink(`https://explorer.shelby.xyz/testnet/account/${account.address.toString()}`);
+      setExplorerLink(`${SHELBY_EXPLORER_BASE}/account/${account.address.toString()}`);
       setSelectedFile(null);
       setVideoDescription('');
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -386,7 +406,7 @@ function ShelbyApp() {
     }
     
     const walletAddress = account.address.toString();
-    const downloadUrl = `https://api.testnet.shelby.xyz/shelby/v1/blobs/${walletAddress}/${filename}`;
+    const downloadUrl = buildBlobUrl(walletAddress, filename);
     
     try {
       const response = await fetch(downloadUrl);
@@ -425,11 +445,10 @@ function ShelbyApp() {
 
     try {
       setIsDeleting(true);
-      const payload = ShelbyBlobClient.createDeleteBlobPayload({
-        account: AccountAddress.fromString(account.address.toString()),
+      const payload = ShelbyBlobClient.createDeleteObjectPayload({
         blobName: blobToDelete.blobNameSuffix
-      } as any);
-      
+      });
+
       const response = await (signAndSubmitTransaction as any)({ data: payload });
       await aptosClient.waitForTransaction({ transactionHash: response.hash });
 
@@ -527,8 +546,6 @@ function ShelbyApp() {
             </div>
             <span className="text-xl font-black tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">SHELTOK</span>
           </div>
-
-
 
           {/* Messaging */}
           <h1 className="text-2xl font-extrabold tracking-tight mb-3 text-white leading-tight">
@@ -745,7 +762,7 @@ export default function App() {
     <BrowserRouter>
       <AptosWalletAdapterProvider 
         autoConnect={true}
-        dappConfig={{ network: Network.TESTNET }}
+        dappConfig={{ network: Network.SHELBYNET }}
       >
         <Routes>
           <Route path="/" element={<ShelbyApp />} />

@@ -23,11 +23,11 @@ Sheltok is a TikTok-style vertical video feed where every video is stored as a b
 ## Architecture
 
 ```
-Upload → Encode → Register on-chain (Aptos) → putBlob (Shelby RPC)
+Upload → Encode → Register (Aptos) → putBlobChunksets (RPC) → commitObject (Aptos)
                                                         │
 Feed  ← getBlobs (namespace filter) ← Shelby coordination layer
                                                         │
-Playback ← byte-range requests ← Shelby testnet gateway
+Playback ← byte-range requests ← Shelby shelbynet gateway
 ```
 
 ---
@@ -65,8 +65,8 @@ Any blob on the network matching this pattern from any wallet is treated as vali
 
 ## Shelby Integration
 
-### 1. Storage — `putBlob`
-Video files are chunked and uploaded directly to Shelby RPC nodes via `shelbyClient.rpc.putBlob`, bypassing any centralized storage layer.
+### 1. Storage — `putBlobChunksets`
+Video files are chunked and uploaded directly to Shelby RPC nodes via `shelbyClient.rpc.putBlobChunksets`, bypassing any centralized storage layer. The RPC authorizes the write by the blob's on-chain `uid` and account address, so a browser wallet never exposes a private key.
 
 ### 2. Coordination & Indexing
 Using `@shelby-protocol/react` and `@shelby-protocol/sdk/browser`:
@@ -76,9 +76,9 @@ Using `@shelby-protocol/react` and `@shelby-protocol/sdk/browser`:
 Both return live results directly from Shelby's indexer, no caching layer, no external database.
 
 ### 3. Streaming
-All playback and gallery previews stream directly from Shelby's testnet gateway:
+All playback and gallery previews stream directly from Shelby's shelbynet gateway:
 ```
-https://api.testnet.shelby.xyz/shelby/v1/blobs/
+https://shelby.shelbynet.shelby.xyz/shelby/v1/blobs/
 ```
 Video elements request content via native browser byte-range requests, no custom streaming server involved.
 
@@ -87,11 +87,12 @@ Transactions are built with `ShelbyBlobClient` payloads and signed via the Aptos
 
 ---
 
-## Upload Flow (3 steps)
+## Upload Flow (4 steps)
 
 1. **Encode** — file converted to commitment hashes via Shelby's erasure coding provider (`generateCommitments`)
-2. **Register on-chain** — `createRegisterBlobPayload` builds a transaction (blob name, size, 30-day expiration), signed by the connected wallet
-3. **Push to RPC** — raw bytes uploaded via `putBlob` using the constructed blob name
+2. **Register on-chain** — `createRegisterBlobPayload` builds a transaction (blob name, size, 30-day expiration), signed by the connected wallet. The `uid` is parsed from the transaction events via `ShelbyBlobClient.registeredBlobUids`
+3. **Push to RPC** — raw bytes uploaded via `putBlobChunksets` (keyed by `uid` + account address), returning storage-provider acks
+4. **Commit on-chain** — `createCommitObjectPayload` finalizes the object with the storage-provider acks, signed by the connected wallet
 
 ---
 
@@ -111,7 +112,7 @@ Likes and follows are stored in Supabase, deliberately kept outside Shelby since
 
 ## HLS / Adaptive Bitrate — Explored, Not Shipped
 
-Evaluated `@shelby-protocol/player` and `@shelby-protocol/media-prepare` for HLS output. Transcoding generates many segment files per video, and batch-uploading the full segment set to Shelby was too slow to be viable under current testnet conditions. Shipped with direct MP4 blob streaming via byte-range requests instead, which already performs well. HLS remains a candidate once batch upload throughput improves.
+Evaluated `@shelby-protocol/player` and `@shelby-protocol/media-prepare` for HLS output. Transcoding generates many segment files per video, and batch-uploading the full segment set to Shelby was too slow to be viable under current network conditions. Shipped with direct MP4 blob streaming via byte-range requests instead, which already performs well. HLS remains a candidate once batch upload throughput improves.
 
 ---
 
@@ -132,7 +133,7 @@ Evaluated `@shelby-protocol/player` and `@shelby-protocol/media-prepare` for HLS
 | Layer | Technology |
 |---|---|
 | Storage & indexing | Shelby (`@shelby-protocol/sdk`, `@shelby-protocol/react`) |
-| Chain | Aptos Testnet |
+| Chain | Aptos (shelbynet) |
 | Wallet | Aptos Wallet Adapter |
 | Social graph | Supabase |
 | Frontend | React + TypeScript + Vite |
