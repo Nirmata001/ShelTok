@@ -152,6 +152,14 @@ const VideoItem = memo(({
         playPromise.catch(err => {
           if (err.name !== 'AbortError') {
             console.log("Playback error:", err);
+            // Fallback to muted playback if blocked by browser autoplay rules
+            if (err.name === 'NotAllowedError' && !videoElem.muted) {
+              console.log("Autoplay with sound blocked, falling back to muted autoplay");
+              videoElem.muted = true;
+              videoElem.play().catch(e => {
+                console.error("Muted playback fallback also failed:", e);
+              });
+            }
           }
         });
       }
@@ -454,7 +462,7 @@ const VideoItem = memo(({
           </div>
 
           {/* Rotating vinyl */}
-          <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center border border-white/20 animate-spin mt-1" style={{ animationDuration: '4s' }}>
+          <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center border border-white/20 mt-1">
             <img
               alt="album mini"
               className="w-6 h-6 rounded-full object-cover"
@@ -531,7 +539,7 @@ const VideoItem = memo(({
           </button>
 
           {/* Mini Album Rotating */}
-          <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center border border-white/25 animate-spin" style={{ animationDuration: '4s' }}>
+          <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center border border-white/25">
             <img
               alt="album mini"
               className="w-5.5 h-5.5 rounded-full object-cover"
