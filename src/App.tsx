@@ -139,7 +139,7 @@ function ShelbyApp() {
   const [isMediaGalleryOpen, setIsMediaGalleryOpen] = useState(false);
   const [isVideoFeedOpen, setIsVideoFeedOpen] = useState(true);
   const [feedFilter, setFeedFilter] = useState<'explore' | 'following'>('explore');
-  const [isFeedMuted, setIsFeedMuted] = useState(false);
+  const [isFeedMuted, setIsFeedMuted] = useState(true);
   const [followedUsers, setFollowedUsers] = useState<Record<string, boolean>>({});
 
   // Account specific uploads state
