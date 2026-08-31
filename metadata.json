@@ -1,5 +1,8 @@
 {
   "name": "Sheltok",
   "description": "A decentralized media hub built on Shelby Protocol and Aptos.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

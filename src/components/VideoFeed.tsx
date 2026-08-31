@@ -4,7 +4,12 @@ import {
   Play, 
   ChevronLeft,
   CheckCircle,
-  Film
+  Film,
+  Plus,
+  Heart,
+  Bookmark,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
 import { shelbyAuthHeaders, isShelbySWReady } from '../services/shelbyService';
@@ -423,7 +428,7 @@ const VideoItem = memo(({
                       }}
                       className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-5 h-5 bg-[#FE2C55] text-white rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-110"
                     >
-                      <span className="material-symbols-outlined text-[13px] font-bold">add</span>
+                      <Plus className="w-3.5 h-3.5 stroke-[3]" />
                     </button>
                   )}
                 </div>
@@ -434,12 +439,12 @@ const VideoItem = memo(({
                   className="flex flex-col items-center gap-0.5 group transition-transform active:scale-110 outline-none"
                 >
                   <div className={`w-10 h-10 rounded-full ${isLiked ? 'bg-[#FE2C55]/25 text-[#FE2C55] border border-[#FE2C55]/40' : 'bg-white/10 text-white border border-white/15'} backdrop-blur-md flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] transition-colors`}>
-                    <span 
-                      className="material-symbols-outlined text-[24px]" 
-                      style={{ fontVariationSettings: isLiked ? "'FILL' 1" : "'FILL' 0" }}
-                    >
-                      favorite
-                    </span>
+                    <Heart 
+                      className="w-5 h-5 transition-transform group-active:scale-125"
+                      fill={isLiked ? "#FE2C55" : "none"}
+                      color={isLiked ? "#FE2C55" : "currentColor"}
+                      strokeWidth={2}
+                    />
                   </div>
                   <span className="font-mono text-[11px] font-bold text-white drop-shadow-md tracking-tight">
                     {likesCount ? (likesCount > 999 ? `${(likesCount / 1000).toFixed(1)}k` : likesCount) : "0"}
@@ -452,7 +457,7 @@ const VideoItem = memo(({
                   className="flex flex-col items-center gap-0.5 group transition-transform active:scale-110 outline-none"
                 >
                   <div className="w-10 h-10 rounded-full bg-white/10 text-white border border-white/15 backdrop-blur-md flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] transition-colors">
-                    <span className="material-symbols-outlined text-[22px]">bookmark</span>
+                    <Bookmark className="w-5 h-5 fill-current" strokeWidth={2} />
                   </div>
                   <span className="font-mono text-[11px] font-bold text-white drop-shadow-md tracking-tight">Save</span>
                 </button>
@@ -464,9 +469,11 @@ const VideoItem = memo(({
                   title={isMuted ? "Unmute" : "Mute"}
                 >
                   <div className={`w-10 h-10 rounded-full ${isMuted ? 'bg-white/10 text-white/80' : 'bg-[#00f2ea]/20 text-[#00f2ea] border border-[#00f2ea]/40'} backdrop-blur-md flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] transition-colors border border-white/15`}>
-                    <span className="material-symbols-outlined text-[22px]">
-                      {isMuted ? "volume_off" : "volume_up"}
-                    </span>
+                    {isMuted ? (
+                      <VolumeX className="w-5 h-5 text-white/90" strokeWidth={2} />
+                    ) : (
+                      <Volume2 className="w-5 h-5 text-[#00f2ea]" strokeWidth={2} />
+                    )}
                   </div>
                   <span className="font-mono text-[11px] font-bold text-white drop-shadow-md tracking-tight">
                     {isMuted ? "Muted" : "Sound"}

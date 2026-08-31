@@ -21,8 +21,10 @@ import {
   ChevronDown, 
   ChevronUp, 
   Home, 
-  Plus as Add, 
-  Video as VideoLibrary,
+  Compass,
+  Plus, 
+  Film,
+  User,
   Smartphone,
   Sparkles
 } from 'lucide-react';
@@ -658,12 +660,11 @@ function ShelbyApp() {
             isVideoFeedOpen && !isMediaGalleryOpen && !isUploadPageOpen ? 'text-white scale-105' : 'text-white/50 hover:text-white/80'
           }`}
         >
-          <span 
-            className="material-symbols-outlined text-2xl" 
-            style={{ fontVariationSettings: isVideoFeedOpen && !isMediaGalleryOpen && !isUploadPageOpen ? "'FILL' 1" : "'FILL' 0" }}
-          >
-            home
-          </span>
+          <Home 
+            className="w-5 h-5" 
+            fill={isVideoFeedOpen && !isMediaGalleryOpen && !isUploadPageOpen ? "currentColor" : "none"} 
+            strokeWidth={2.2} 
+          />
           <span className="font-mono text-[10px] font-bold tracking-wider mt-0.5">Home</span>
         </button>
 
@@ -676,7 +677,7 @@ function ShelbyApp() {
           }}
           className="flex flex-col items-center justify-center text-white/50 transition-all duration-150 outline-none cursor-default"
         >
-          <span className="material-symbols-outlined text-2xl">explore</span>
+          <Compass className="w-5 h-5" strokeWidth={2} />
           <span className="font-mono text-[10px] font-bold tracking-wider mt-0.5">Discover</span>
         </button>
 
@@ -687,7 +688,7 @@ function ShelbyApp() {
         >
           <div className="w-12 h-9 rounded-xl bg-white flex items-center justify-center relative overflow-hidden group shadow-lg">
             <div className="absolute inset-0 bg-gradient-to-r from-[#00f2ea] to-[#FE2C55] opacity-90 group-hover:opacity-100 transition-opacity"></div>
-            <span className="material-symbols-outlined text-black font-bold text-2xl relative z-10">add</span>
+            <Plus className="w-5 h-5 text-black stroke-[3] relative z-10" />
           </div>
         </button>
 
@@ -698,12 +699,11 @@ function ShelbyApp() {
             isMediaGalleryOpen && !isUploadPageOpen ? 'text-white scale-105' : 'text-white/50 hover:text-white/80'
           }`}
         >
-          <span 
-            className="material-symbols-outlined text-2xl"
-            style={{ fontVariationSettings: isMediaGalleryOpen ? "'FILL' 1" : "'FILL' 0" }}
-          >
-            video_library
-          </span>
+          <Film 
+            className="w-5 h-5" 
+            fill={isMediaGalleryOpen && !isUploadPageOpen ? "currentColor" : "none"} 
+            strokeWidth={2} 
+          />
           <span className="font-mono text-[10px] font-bold tracking-wider mt-0.5">Posts</span>
         </button>
 
@@ -720,7 +720,7 @@ function ShelbyApp() {
           }}
           className="flex flex-col items-center justify-center text-white/50 hover:text-white transition-all duration-150 outline-none"
         >
-          <span className="material-symbols-outlined text-2xl">person</span>
+          <User className="w-5 h-5" strokeWidth={2} />
           <span className="font-mono text-[10px] font-bold tracking-wider mt-0.5">Profile</span>
         </button>
       </nav>

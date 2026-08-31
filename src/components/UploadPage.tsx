@@ -220,7 +220,7 @@ const UploadPage: React.FC<UploadPageProps> = ({
                 {isEncoding ? (
                   <span className="flex items-center justify-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    Publishing to Aptos...
+                    publishing.....
                   </span>
                 ) : (
                   'Publish Video'
