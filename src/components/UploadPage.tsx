@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   CloudUpload, 
   FileText as Description, 
   Loader2,
   Video,
-  X
+  X,
+  Smile
 } from 'lucide-react';
 
 interface UploadPageProps {
@@ -25,6 +26,31 @@ interface UploadPageProps {
   onConnectWallet: () => void;
 }
 
+const QUICK_EMOJIS = ['🔥', '🚀', '⚡', '💎', '❤️', '😂', '💯', '🎵', '✨', '👀', '🦾', '🥂'];
+
+const EMOJI_CATEGORIES: { name: string; emojis: string[] }[] = [
+  {
+    name: 'Trending',
+    emojis: ['🔥', '🚀', '⚡', '💎', '💯', '✨', '👑', '🎯', '🎬', '🌟', '💥', '🏆']
+  },
+  {
+    name: 'Reactions',
+    emojis: ['😂', '😍', '😎', '🤩', '🤯', '🥳', '🙌', '👏', '🤝', '❤️', '💀', '🫡']
+  },
+  {
+    name: 'Media & Vibes',
+    emojis: ['🎵', '🎶', '🎧', '🎤', '📹', '📸', '🍿', '💃', '🕺', '🎨', '🕹️', '🕶️']
+  },
+  {
+    name: 'Web3 & Tech',
+    emojis: ['🌐', '⛓️', '🤖', '💰', '🪙', '📈', '🔑', '🛡️', '⚡', '💻', '🔮', '🛸']
+  },
+  {
+    name: 'Symbols & Tags',
+    emojis: ['✔️', '📍', '🚨', '🏷️', '📢', '💬', '👁️', '💡', '⏰', '🚀', '⚡', '⭐']
+  }
+];
+
 const UploadPage: React.FC<UploadPageProps> = ({
   account,
   connected,
@@ -42,6 +68,28 @@ const UploadPage: React.FC<UploadPageProps> = ({
   fileInputRef,
   onConnectWallet,
 }) => {
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
+  const captionInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const insertEmoji = (emoji: string) => {
+    const textarea = captionInputRef.current;
+    if (!textarea) {
+      setVideoDescription(videoDescription + emoji);
+      return;
+    }
+
+    const start = textarea.selectionStart ?? videoDescription.length;
+    const end = textarea.selectionEnd ?? videoDescription.length;
+    const newText = videoDescription.slice(0, start) + emoji + videoDescription.slice(end);
+    setVideoDescription(newText);
+
+    // Restore cursor position after the inserted emoji
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+    }, 10);
+  };
   return (
     <div className="w-full text-white px-4 md:px-0 pt-4 md:pt-16 pb-24 md:pb-12 animate-fade-in max-w-xl mx-auto">
       {/* Header */}
@@ -162,11 +210,28 @@ const UploadPage: React.FC<UploadPageProps> = ({
         
         {/* Metadata & Actions */}
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-white/50">
-              Caption
-            </label>
+          <div className="flex flex-col gap-2 text-left">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-white/50">
+                Caption
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border transition-all ${
+                  showEmojiPicker
+                    ? 'bg-[#FE2C55]/20 border-[#FE2C55]/50 text-[#FE2C55]'
+                    : 'bg-white/5 hover:bg-white/10 border-white/10 text-white/70 hover:text-white'
+                }`}
+                title="Open emoji selector"
+              >
+                <Smile className="w-3.5 h-3.5" />
+                <span className="font-semibold text-[11px]">Emojis</span>
+              </button>
+            </div>
+
             <textarea 
+              ref={captionInputRef}
               rows={2}
               value={videoDescription}
               onChange={(e) => setVideoDescription(e.target.value)}
@@ -174,6 +239,52 @@ const UploadPage: React.FC<UploadPageProps> = ({
               placeholder="Write a caption, tags, or description..."
               className="w-full bg-neutral-950 border border-white/15 hover:border-white/25 focus:border-[#FE2C55] rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm font-medium transition-all outline-none resize-none"
             />
+
+            {/* Dedicated Categorized Emoji Selector Drawer / Palette */}
+            {showEmojiPicker && (
+              <div className="bg-neutral-900/95 border border-white/15 rounded-2xl p-3.5 shadow-2xl backdrop-blur-md mt-1 animate-fade-in flex flex-col gap-3">
+                {/* Category Navigation */}
+                <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+                    {EMOJI_CATEGORIES.map((cat, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setActiveCategoryIndex(idx)}
+                        className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-all shrink-0 ${
+                          activeCategoryIndex === idx
+                            ? 'bg-white text-black font-bold shadow-sm'
+                            : 'text-white/60 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowEmojiPicker(false)}
+                    className="p-1 rounded-md text-white/40 hover:text-white hover:bg-white/10 transition-colors ml-2"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Emoji Grid */}
+                <div className="grid grid-cols-6 sm:grid-cols-12 gap-1.5 max-h-36 overflow-y-auto pr-1">
+                  {EMOJI_CATEGORIES[activeCategoryIndex].emojis.map((emoji, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => insertEmoji(emoji)}
+                      className="h-9 rounded-xl bg-white/5 hover:bg-white/20 active:scale-90 border border-transparent hover:border-white/20 flex items-center justify-center text-lg transition-all"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-2.5 pt-1">
