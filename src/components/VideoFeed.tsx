@@ -70,6 +70,7 @@ const VideoItem = memo(({
   const [hasError, setHasError] = useState(false);
   const [aspectRatio, setAspectRatio] = useState<'portrait' | 'landscape' | 'square'>('portrait');
   const seekBarRef = useRef<HTMLInputElement>(null);
+  const mobileProgressBarRef = useRef<HTMLDivElement>(null);
   const animationFrameIdRef = useRef<number | null>(null);
 
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
@@ -174,12 +175,17 @@ const VideoItem = memo(({
     const updateSeekBar = () => {
       const videoElem = videoRef.current;
       const seekBar = seekBarRef.current;
-      if (videoElem && seekBar) {
+      if (videoElem) {
         const cur = videoElem.currentTime;
         const dur = videoElem.duration || 1;
-        seekBar.value = cur.toString();
         const percent = (cur / dur) * 100;
-        seekBar.style.background = `linear-gradient(to right, rgba(255, 255, 255, 1) ${percent}%, transparent ${percent}%)`;
+        if (seekBar) {
+          seekBar.value = cur.toString();
+          seekBar.style.background = `linear-gradient(to right, rgba(255, 255, 255, 1) ${percent}%, transparent ${percent}%)`;
+        }
+        if (mobileProgressBarRef.current) {
+          mobileProgressBarRef.current.style.width = `${percent}%`;
+        }
       }
       if (isPlaying) {
         animationFrameIdRef.current = requestAnimationFrame(updateSeekBar);
@@ -261,24 +267,27 @@ const VideoItem = memo(({
         seekBarRef.current.value = time.toString();
         seekBarRef.current.style.background = `linear-gradient(to right, rgba(255, 255, 255, 1) ${percent}%, transparent ${percent}%)`;
       }
+      if (mobileProgressBarRef.current) {
+        mobileProgressBarRef.current.style.width = `${percent}%`;
+      }
     }
   };
 
   return (
-    <div className="relative h-full w-full bg-black flex items-center justify-center md:py-1 overflow-hidden snap-start">
-      <div className={`flex md:space-x-4 space-x-0 justify-center items-end relative transition-all duration-300 ${
+    <div className="relative h-full w-full bg-black flex items-center justify-center p-0 md:py-1 overflow-hidden snap-start">
+      <div className={`flex md:space-x-4 space-x-0 justify-center items-center md:items-end relative transition-all duration-300 w-full h-full ${
         aspectRatio === 'portrait' 
-          ? 'w-full h-full max-h-[calc(100vh-25px)]' 
-          : 'w-full h-auto max-h-[calc(100vh-25px)]'
+          ? 'md:max-h-[calc(100vh-25px)]' 
+          : 'md:h-auto md:max-h-[calc(100vh-25px)]'
       }`}>
         
         {/* Video Card Container */}
-        <div className={`video-container bg-tiktok-dark rounded-xl overflow-hidden relative flex items-center justify-center border-0 md:border border-white/10 shadow-2xl relative transition-all duration-300 ${
+        <div className={`video-container bg-tiktok-dark rounded-none md:rounded-xl overflow-hidden relative flex items-center justify-center border-0 md:border md:border-white/10 shadow-2xl transition-all duration-300 w-full h-full ${
           aspectRatio === 'landscape' 
-            ? 'w-full md:w-[720px] lg:w-[820px] xl:w-[900px] aspect-[16/9] h-auto max-h-[calc(100vh-25px)]' 
+            ? 'md:w-[720px] lg:w-[820px] xl:w-[900px] md:aspect-[16/9] md:h-auto md:max-h-[calc(100vh-25px)]' 
             : aspectRatio === 'square' 
-              ? 'w-full md:w-[440px] lg:w-[480px] xl:w-[520px] aspect-square h-auto max-h-[calc(100vh-25px)]' 
-              : 'w-full md:w-[320px] xl:w-[400px] h-full'
+              ? 'md:w-[440px] lg:w-[480px] xl:w-[520px] md:aspect-square md:h-auto md:max-h-[calc(100vh-25px)]' 
+              : 'md:w-[320px] xl:w-[400px]'
         }`}>
           {shouldLoad ? (
             <>
@@ -315,11 +324,11 @@ const VideoItem = memo(({
                 />
               )}
 
-              {/* TikTok style Mute Button (Top-Left of Video Card) */}
+              {/* Desktop TikTok style Mute Button (Top-Left of Video Card) */}
               {!hasError && (
                 <button
                   onClick={onToggleMute}
-                  className="absolute top-4 left-4 z-40 w-10 h-10 rounded-full bg-transparent hover:bg-white/15 border border-transparent hover:border-white/20 drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)] transition-all duration-200 pointer-events-auto flex items-center justify-center text-white cursor-pointer hover:scale-105 active:scale-95"
+                  className="hidden md:flex absolute top-4 left-4 z-40 w-10 h-10 rounded-full bg-transparent hover:bg-white/15 border border-transparent hover:border-white/20 drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)] transition-all duration-200 pointer-events-auto items-center justify-center text-white cursor-pointer hover:scale-105 active:scale-95"
                   aria-label={isMuted ? "Unmute" : "Mute"}
                 >
                   {isMuted ? (
@@ -334,8 +343,8 @@ const VideoItem = memo(({
                 </button>
               )}
 
-              {/* Seek Bar */}
-              <div className="absolute bottom-0 left-0 right-0 z-[110] pointer-events-auto group/seekbar md:py-2 py-0">
+              {/* Desktop Seek Bar */}
+              <div className="hidden md:block absolute bottom-0 left-0 right-0 z-[110] pointer-events-auto group/seekbar py-2">
                 <input
                   ref={seekBarRef}
                   type="range"
@@ -348,11 +357,11 @@ const VideoItem = memo(({
                 />
               </div>
 
-              {/* Overlay Controls */}
-              <div className="absolute inset-0 flex flex-col justify-end pointer-events-none z-20">
+              {/* Desktop Overlay Info */}
+              <div className="hidden md:flex absolute inset-0 flex-col justify-end pointer-events-none z-20">
                 <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
                 
-                <div className="pl-2.5 pr-4 pb-4 md:pl-3 md:pr-5 md:pb-5 relative z-10 text-left pointer-events-auto">
+                <div className="pl-3 pr-5 pb-5 relative z-10 text-left pointer-events-auto">
                   <div className="font-bold text-base flex items-center gap-1.5 text-white mb-1.5 drop-shadow-md">
                     <span className="-ml-0.5 hover:underline cursor-pointer font-black" onClick={(e) => onUsernameClick?.(video.wallet_address, e)}>
                       @{video.wallet_address.slice(0, 6)}...{video.wallet_address.slice(-4)}
@@ -374,6 +383,115 @@ const VideoItem = memo(({
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Mobile Overlay: Gradient Layer */}
+              <div className="md:hidden absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/90 pointer-events-none z-10" />
+
+              {/* Mobile Overlay: Bottom Left Info Area */}
+              <div className="md:hidden absolute bottom-3 left-0 w-[calc(100%-64px)] px-4 pb-1 z-40 pointer-events-auto flex flex-col gap-1 text-left">
+                <h2 
+                  onClick={(e) => onUsernameClick?.(video.wallet_address, e)}
+                  className="font-bold text-[15px] text-white drop-shadow-lg cursor-pointer hover:underline flex items-center gap-1.5"
+                >
+                  <span>@{video.wallet_address.slice(0, 6)}...{video.wallet_address.slice(-4)}</span>
+                </h2>
+                {video.description && (
+                  <p className="text-xs text-white/90 drop-shadow-md line-clamp-2 leading-relaxed font-normal">
+                    {video.description}
+                  </p>
+                )}
+              </div>
+
+              {/* Mobile Overlay: Right-Side Action Stack (Thumb Zone) */}
+              <div className="md:hidden absolute right-1.5 bottom-3 flex flex-col items-center gap-3 z-40 px-2 pb-1 pointer-events-auto">
+                {/* Profile */}
+                <div className="relative mb-1.5 group cursor-pointer" onClick={(e) => onUsernameClick?.(video.wallet_address, e)}>
+                  <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-white/90 bg-black shadow-lg">
+                    <img
+                      alt="Creator Profile"
+                      className="w-full h-full object-cover"
+                      src={`https://api.dicebear.com/7.x/identicon/svg?seed=${video.wallet_address}`}
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                  {!isFollowing && (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleFollow?.();
+                      }}
+                      className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-5 h-5 bg-[#FE2C55] text-white rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-110"
+                    >
+                      <span className="material-symbols-outlined text-[13px] font-bold">add</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Like */}
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onToggleLike?.(); }}
+                  className="flex flex-col items-center gap-0.5 group transition-transform active:scale-110 outline-none"
+                >
+                  <div className={`w-10 h-10 rounded-full ${isLiked ? 'bg-[#FE2C55]/25 text-[#FE2C55] border border-[#FE2C55]/40' : 'bg-white/10 text-white border border-white/15'} backdrop-blur-md flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] transition-colors`}>
+                    <span 
+                      className="material-symbols-outlined text-[24px]" 
+                      style={{ fontVariationSettings: isLiked ? "'FILL' 1" : "'FILL' 0" }}
+                    >
+                      favorite
+                    </span>
+                  </div>
+                  <span className="font-mono text-[11px] font-bold text-white drop-shadow-md tracking-tight">
+                    {likesCount ? (likesCount > 999 ? `${(likesCount / 1000).toFixed(1)}k` : likesCount) : "0"}
+                  </span>
+                </button>
+
+                {/* Bookmark / Download */}
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onDownload?.(); }}
+                  className="flex flex-col items-center gap-0.5 group transition-transform active:scale-110 outline-none"
+                >
+                  <div className="w-10 h-10 rounded-full bg-white/10 text-white border border-white/15 backdrop-blur-md flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] transition-colors">
+                    <span className="material-symbols-outlined text-[22px]">bookmark</span>
+                  </div>
+                  <span className="font-mono text-[11px] font-bold text-white drop-shadow-md tracking-tight">Save</span>
+                </button>
+
+                {/* Mute / Unmute */}
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onToggleMute?.(e); }}
+                  className="flex flex-col items-center gap-0.5 group transition-transform active:scale-110 outline-none"
+                  title={isMuted ? "Unmute" : "Mute"}
+                >
+                  <div className={`w-10 h-10 rounded-full ${isMuted ? 'bg-white/10 text-white/80' : 'bg-[#00f2ea]/20 text-[#00f2ea] border border-[#00f2ea]/40'} backdrop-blur-md flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] transition-colors border border-white/15`}>
+                    <span className="material-symbols-outlined text-[22px]">
+                      {isMuted ? "volume_off" : "volume_up"}
+                    </span>
+                  </div>
+                  <span className="font-mono text-[11px] font-bold text-white drop-shadow-md tracking-tight">
+                    {isMuted ? "Muted" : "Sound"}
+                  </span>
+                </button>
+
+                {/* Audio Record Album */}
+                <div className="w-10 h-10 rounded-full bg-black mt-0.5 overflow-hidden border border-white/20 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] cursor-pointer">
+                  <div className="w-6 h-6 rounded-full bg-neutral-900 overflow-hidden">
+                    <img
+                      alt="Audio Track"
+                      className="w-full h-full object-cover"
+                      src={`https://api.dicebear.com/7.x/identicon/svg?seed=${video.wallet_address}`}
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile Progress Bar (2px line at bottom) */}
+              <div className="md:hidden absolute bottom-0 left-0 w-full h-[2px] bg-white/20 z-50 pointer-events-none">
+                <div 
+                  ref={mobileProgressBarRef}
+                  className="h-full bg-[#00f2ea] shadow-[0_0_8px_rgba(0,242,234,0.6)] w-0 transition-all duration-75"
+                />
               </div>
 
               {!isPlaying && isLoaded && !hasError && (
@@ -466,83 +584,6 @@ const VideoItem = memo(({
             <img
               alt="album mini"
               className="w-6 h-6 rounded-full object-cover"
-              src={`https://api.dicebear.com/7.x/identicon/svg?seed=${video.wallet_address}`}
-              referrerPolicy="no-referrer"
-            />
-          </div>
-        </div>
-
-        {/* RIGHT SIDE ENGAGEMENT BAR (Mobile Overlay) */}
-        <div className="md:hidden absolute right-3 bottom-24 flex flex-col items-center space-y-4 z-30 pointer-events-auto">
-          {/* Mobile Profile */}
-          <div className="relative mb-1">
-            <div className="w-11 h-11 rounded-full border-2 border-white overflow-hidden bg-black flex items-center justify-center shadow-lg">
-              <img
-                alt="Creator Profile"
-                className="w-full h-full object-cover"
-                src={`https://api.dicebear.com/7.x/identicon/svg?seed=${video.wallet_address}`}
-                referrerPolicy="no-referrer"
-              />
-            </div>
-            {!isFollowing && (
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleFollow?.();
-                }}
-                className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-tiktok-red hover:brightness-95 text-white rounded-full p-0.5 shadow-lg active:scale-95 transition-transform outline-none cursor-pointer flex items-center justify-center"
-              >
-                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-                </svg>
-              </button>
-            )}
-          </div>
-
-          {/* Mobile Like */}
-          <div className="flex flex-col items-center">
-            <button 
-              onClick={(e) => { e.stopPropagation(); onToggleLike?.(); }}
-              className={`w-11 h-11 rounded-full flex items-center justify-center cursor-pointer transition active:scale-90 ${
-                isLiked 
-                  ? 'bg-tiktok-red text-white shadow-lg' 
-                  : 'bg-black/40 text-white backdrop-blur-md border border-white/10'
-              }`}
-            >
-              <svg className="w-6 h-6" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
-            </button>
-            <span className="text-[10px] font-bold mt-0.5 text-white drop-shadow-md">{likesCount || "0"}</span>
-          </div>
-
-
-
-          {/* Mobile Download */}
-          <button 
-            onClick={(e) => { e.stopPropagation(); onDownload?.(); }}
-            className="w-11 h-11 bg-black/40 text-white backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center cursor-pointer transition active:scale-90"
-          >
-            <svg className="w-5.5 h-5.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-            </svg>
-          </button>
-
-          {/* Mobile Share */}
-          <button 
-            onClick={(e) => { e.stopPropagation(); onCopyLink?.(); }}
-            className="w-11 h-11 bg-black/40 text-white backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center cursor-pointer transition active:scale-90"
-          >
-            <svg className="w-5.5 h-5.5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M11.733 8.267L11.733 4L20 12L11.733 20L11.733 15.867C5.067 15.867 2 20 2 20C2 13.067 5.067 8.267 11.733 8.267Z" />
-            </svg>
-          </button>
-
-          {/* Mini Album Rotating */}
-          <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center border border-white/25">
-            <img
-              alt="album mini"
-              className="w-5.5 h-5.5 rounded-full object-cover"
               src={`https://api.dicebear.com/7.x/identicon/svg?seed=${video.wallet_address}`}
               referrerPolicy="no-referrer"
             />
@@ -1050,9 +1091,9 @@ export default function VideoFeed({
               <div 
                 key={`${video.id}-${index}`} 
                 data-index={index} 
-                className='relative bg-black snap-start flex-shrink-0'
+                className='relative bg-black snap-start flex-shrink-0 h-full w-full'
                 style={{
-                  height: isEmbedded ? '100%' : (typeof window !== 'undefined' && window.innerWidth < 768 ? 'calc(100dvh - 64px)' : '100dvh'),
+                  height: '100%',
                   width: '100%',
                   scrollSnapStop: 'always',
                   contain: 'strict',

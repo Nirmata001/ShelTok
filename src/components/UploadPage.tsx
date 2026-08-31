@@ -4,7 +4,10 @@ import {
   CloudUpload, 
   FileText as Description, 
   Loader2,
-  Lock
+  Lock,
+  Video,
+  X,
+  Sparkles
 } from 'lucide-react';
 
 interface UploadPageProps {
@@ -25,15 +28,6 @@ interface UploadPageProps {
   onConnectWallet: () => void;
 }
 
-const getFileExtension = (fileName: string): string => {
-  const lowercaseName = (fileName || '').toLowerCase();
-  const prefixMatch = lowercaseName.match(/\.([a-z0-9]+):::/);
-  if (prefixMatch) return prefixMatch[1];
-  const suffixMatch = lowercaseName.match(/\.([a-z0-9]+)$/);
-  if (suffixMatch) return suffixMatch[1];
-  return 'mp4';
-};
-
 const UploadPage: React.FC<UploadPageProps> = ({
   account,
   connected,
@@ -52,39 +46,53 @@ const UploadPage: React.FC<UploadPageProps> = ({
   onConnectWallet,
 }) => {
   return (
-    <div className="w-full text-white pt-12 md:pt-16 pb-12 animate-fade-in">
-      <div className="flex flex-col gap-2 mb-8">
-        <h1 className="text-4xl font-extrabold tracking-tight">Upload New Content</h1>
-        <p className="text-sm text-white/50">Register and store your audio, video, or data file on the Aptos blockchain with ShelTok.</p>
+    <div className="w-full text-white px-4 md:px-0 pt-4 md:pt-16 pb-24 md:pb-12 animate-fade-in max-w-xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col gap-1 mb-5 md:mb-8 text-left">
+        <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight flex items-center gap-2">
+          <span>Create Post</span>
+        </h1>
+        <p className="text-xs md:text-sm text-white/50">
+          Upload and store your content
+        </p>
       </div>
 
       {!connected ? (
         <motion.div 
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-2xl bg-[#000000] border border-white/10 rounded-3xl p-12 text-center flex flex-col items-center justify-center gap-6 shadow-2xl relative overflow-hidden"
+          className="w-full bg-neutral-950/80 border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-10 text-center flex flex-col items-center justify-center gap-5 shadow-2xl relative overflow-hidden"
         >
-          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#E11D48] to-transparent opacity-30" />
-          <div className="w-16 h-16 bg-[#000000] border border-white/10 rounded-full flex items-center justify-center shadow-lg">
-            <Lock className="w-8 h-8 text-[#E11D48] animate-pulse" />
+          <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#FE2C55] to-transparent opacity-40" />
+          
+          <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-full flex items-center justify-center shadow-lg">
+            <Lock className="w-6 h-6 text-[#FE2C55] animate-pulse" />
           </div>
-          <div className="flex flex-col gap-2 max-w-md">
-            <h2 className="text-xl font-bold tracking-tight">Wallet Connection Required</h2>
-            <p className="text-sm text-white/40 leading-relaxed">
-              ShelTok registered items are verified transactions on Shelbynet. Connect your wallet to access secure distributed streaming and decentralized upload features.
+          
+          <div className="flex flex-col gap-1.5 max-w-md">
+            <h2 className="text-lg md:text-xl font-bold tracking-tight">Connect Wallet to Post</h2>
+            <p className="text-xs md:text-sm text-white/50 leading-relaxed">
+              Connect your Aptos wallet to upload, store, and stream decentralized content on ShelTok.
             </p>
           </div>
-         </motion.div>
+
+          <button
+            onClick={onConnectWallet}
+            className="mt-2 w-full max-w-xs py-3 px-6 rounded-xl bg-gradient-to-r from-[#FE2C55] to-[#FF0050] text-white font-bold text-sm shadow-lg shadow-[#FE2C55]/20 hover:brightness-110 active:scale-95 transition-all outline-none"
+          >
+            Connect Wallet
+          </button>
+        </motion.div>
       ) : (
-        <div className="flex flex-col gap-6 w-full max-w-[692px] mx-auto">
+        <div className="flex flex-col gap-4 md:gap-6 w-full">
           
-          {/* Section: Dropzone & File Status */}
+          {/* Section: File Selection / Dropzone */}
           <div 
-            onClick={() => !isEncoding && fileInputRef.current?.click()}
+            onClick={() => !isEncoding && !selectedFile && fileInputRef.current?.click()}
             onDragOver={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              if (!isEncoding) setIsDragging(true);
+              if (!isEncoding && !selectedFile) setIsDragging(true);
             }}
             onDragLeave={(e) => {
               e.preventDefault();
@@ -101,15 +109,17 @@ const UploadPage: React.FC<UploadPageProps> = ({
                 setSelectedFile(files[0]);
               }
             }}
-            className={`border-2 border-dashed rounded-3xl p-8 flex flex-col items-center justify-center text-center transition-all group min-h-[280px] relative ${
-              isEncoding ? 'cursor-wait opacity-70 border-[#E11D48]/30 bg-[#000000]' : 
-              isDragging ? 'border-[#E11D48] bg-[#E11D48]/5 scale-[1.01] shadow-xl shadow-[#E11D48]/5' : 
-              'cursor-pointer hover:bg-neutral-900/40 border-white/15 bg-[#000000]'
+            className={`border border-dashed rounded-2xl md:rounded-3xl p-4 md:p-8 flex flex-col items-center justify-center text-center transition-all relative overflow-hidden ${
+              isEncoding ? 'cursor-wait opacity-75 border-[#FE2C55]/40 bg-neutral-950' : 
+              isDragging ? 'border-[#00f2ea] bg-[#00f2ea]/5 scale-[1.01]' : 
+              selectedFile ? 'border-white/20 bg-neutral-950' :
+              'cursor-pointer hover:bg-neutral-900/60 border-white/20 bg-neutral-950/60 active:scale-[0.99]'
             }`}
           >
             <input 
               type="file" 
               ref={fileInputRef} 
+              accept="video/*"
               className="hidden" 
               onChange={(e) => {
                 const files = e.target.files;
@@ -120,9 +130,9 @@ const UploadPage: React.FC<UploadPageProps> = ({
             />
             
             {selectedFile ? (
-              <div className="flex flex-col items-center gap-6 w-full" onClick={(e) => e.stopPropagation()}>
+              <div className="flex flex-col items-center gap-4 w-full">
                 {videoPreviewUrl ? (
-                  <div className="w-full max-w-md aspect-video rounded-2xl overflow-hidden bg-black/60 shadow-xl relative group border border-white/10">
+                  <div className="w-full max-w-sm aspect-video md:aspect-[9/16] md:max-h-[300px] rounded-xl overflow-hidden bg-black shadow-xl relative border border-white/10 flex items-center justify-center">
                     <video
                       src={videoPreviewUrl}
                       controls
@@ -133,73 +143,89 @@ const UploadPage: React.FC<UploadPageProps> = ({
                     />
                   </div>
                 ) : (
-                  <div className="w-20 h-20 bg-[#000000] border border-white/10 rounded-2xl flex items-center justify-center shadow-lg">
-                    <Description className="w-10 h-10 text-[#E11D48]" />
+                  <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Description className="w-8 h-8 text-[#FE2C55]" />
                   </div>
                 )}
+
+                <div className="flex items-center justify-between w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5">
+                  <div className="flex items-center gap-2 overflow-hidden text-left">
+                    <Video className="w-4 h-4 text-[#00f2ea] shrink-0" />
+                    <span className="text-xs font-medium truncate max-w-[200px] md:max-w-[300px] text-white/90">
+                      {selectedFile.name}
+                    </span>
+                    <span className="text-[10px] font-mono text-white/40 shrink-0">
+                      ({(selectedFile.size / (1024 * 1024)).toFixed(1)} MB)
+                    </span>
+                  </div>
+                  {!isEncoding && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedFile(null);
+                        setVideoDescription('');
+                        setExplorerLink(null);
+                      }}
+                      className="p-1 rounded-full hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+                      title="Remove file"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
             ) : (
-              <>
-                <div className="w-16 h-16 bg-[#000000] border border-white/10 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:scale-110 group-hover:border-[#E11D48]/30 transition-all duration-300">
-                  <CloudUpload className="w-8 h-8 text-white" />
+              <div className="py-6 md:py-8 flex flex-col items-center gap-3">
+                <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-tr from-white/10 to-white/5 border border-white/15 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                  <CloudUpload className="w-6 h-6 md:w-7 md:h-7 text-[#00f2ea]" />
                 </div>
-                <p className="text-lg font-bold tracking-tight text-white mb-2">
-                  Click to browse or drag and drop files
-                </p>
-                <p className="text-xs text-white/40 max-w-sm leading-normal">
-                  Decentralized, uncensorable content deployment via Aptos gas-optimized transactions.
-                </p>
-
-              </>
+                <div>
+                  <p className="text-sm md:text-base font-bold text-white mb-0.5">
+                    Tap to select video
+                  </p>
+                  <p className="text-[11px] text-white/40">
+                    MP4, WebM, or MOV format supported
+                  </p>
+                </div>
+              </div>
             )}
           </div>
           
-          {/* Metadata & Actions Box */}
-          <div className="flex flex-col gap-6 mt-2">
-            <div className="flex flex-col gap-2 w-full">
-              <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Caption</label>
-              <input 
-                type="text"
+          {/* Metadata & Actions */}
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5 text-left">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-white/50">
+                Caption
+              </label>
+              <textarea 
+                rows={2}
                 value={videoDescription}
                 onChange={(e) => setVideoDescription(e.target.value)}
                 disabled={isEncoding}
-                placeholder="Give your upload a caption or title..."
-                className="w-full bg-[#000000] border border-white/10 hover:border-white/20 rounded-2xl px-5 py-4 text-white placeholder-white/35 text-sm font-semibold focus:shadow-[0_0_0_2px_rgba(225,29,72,0.2)] transition-all outline-none"
+                placeholder="Write a caption, tags, or description..."
+                className="w-full bg-neutral-950 border border-white/15 hover:border-white/25 focus:border-[#FE2C55] rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm font-medium transition-all outline-none resize-none"
               />
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2.5 pt-1">
               <button 
                 onClick={handleStartUpload}
                 disabled={!selectedFile || isEncoding}
-                className={`w-full py-4 rounded-xl text-sm font-black uppercase tracking-widest transition-all active:scale-[0.98] ${
+                className={`w-full py-3.5 rounded-xl text-sm font-bold tracking-wide transition-all active:scale-[0.98] ${
                   selectedFile && !isEncoding
-                    ? 'bg-[#E11D48] hover:bg-[#f43f5e] text-white shadow-lg shadow-[#E11D48]/15' 
-                    : 'bg-[#000000] text-white/20 cursor-not-allowed border border-white/10'
+                    ? 'bg-gradient-to-r from-[#FE2C55] to-[#FF0050] hover:brightness-110 text-white shadow-lg shadow-[#FE2C55]/20' 
+                    : 'bg-neutral-900 text-white/30 cursor-not-allowed border border-white/10'
                 }`}
               >
                 {isEncoding ? (
                   <span className="flex items-center justify-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin text-white" />
-                    Publishing...
+                    Publishing to Aptos...
                   </span>
                 ) : (
-                  'Upload'
+                  'Publish Video'
                 )}
               </button>
-              
-              {selectedFile && !isEncoding && (
-                <button 
-                  onClick={() => {
-                    setSelectedFile(null);
-                    setVideoDescription('');
-                    setExplorerLink(null);
-                  }}
-                  className="w-full py-2.5 bg-[#000000] hover:bg-neutral-900 border border-white/10 rounded-xl text-xs font-semibold text-white/40 hover:text-white transition-all text-center"
-                >
-                  Cancel Upload
-                </button>
-              )}
             </div>
           </div>
         </div>
@@ -209,3 +235,4 @@ const UploadPage: React.FC<UploadPageProps> = ({
 };
 
 export default UploadPage;
+

@@ -522,45 +522,6 @@ function ShelbyApp() {
     }
   };
 
-  if (isMobile) {
-    return (
-      <div className="fixed inset-0 z-[9999] bg-black text-white flex flex-col items-center justify-center p-6 select-none overflow-hidden font-sans">
-        {/* Background radial soft ambient glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-red-600/10 rounded-full blur-[120px] pointer-events-none" />
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="max-w-xs w-full text-center flex flex-col items-center"
-        >
-          {/* Custom Logo/Branding Header */}
-          <div className="mb-12 flex items-center gap-2.5">
-            <div className="bg-white/5 border border-white/10 p-2 rounded-xl flex items-center justify-center shadow-md">
-              <img 
-                src="/logo_custom.png" 
-                alt="ShelTok Logo" 
-                className="w-8 h-8 object-contain scale-125"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-            <span className="text-xl font-black tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">SHELTOK</span>
-          </div>
-
-
-
-          {/* Messaging */}
-          <h1 className="text-2xl font-extrabold tracking-tight mb-3 text-white leading-tight">
-            Coming to Mobile Soon
-          </h1>
-          <p className="text-sm text-white/50 leading-relaxed max-w-[260px] mb-8">
-            We are currently crafting a high-performance native-feel mobile interface. Please open SHELTOK on a desktop device for the ultimate experience.
-          </p>
-        </motion.div>
-      </div>
-    );
-  }
-
   return (
     <div className="bg-background text-on-background antialiased overflow-x-hidden min-h-screen">
       {/* PWA Install Banner */}
@@ -569,23 +530,6 @@ function ShelbyApp() {
         onInstall={handleInstallClick} 
         onDismiss={dismissInstallBanner} 
       />
-
-      {/* Top-Left Floating Logo (Mobile only, as desktop has sidebar) */}
-      <div className="fixed top-4 left-4 z-50 flex items-center gap-2 md:hidden">
-        <div className="relative flex items-center justify-center">
-          <div className="relative bg-black border border-white/10 p-1 rounded-lg flex items-center justify-center shadow-lg">
-            <img 
-              src="/logo_custom.png" 
-              alt="ShelTok Logo" 
-              className="w-5 h-5 object-contain scale-110"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-        </div>
-        <span className="text-xl font-black tracking-tighter text-white select-none flex items-center gap-0.5">
-          Shel<span className="text-[#FE2C55] relative" style={{ textShadow: '-1.5px -1.5px 0px #00f0ff, 1.5px 1.5px 0px #FE2C55' }}>Tok</span>
-        </span>
-      </div>
 
       {/* Top Header / Login & Profile overlays */}
       <Header 
@@ -598,7 +542,9 @@ function ShelbyApp() {
         setDropdownOpen={setIsWalletDropdownOpen}
       />
 
-      <main className="flex h-screen w-full bg-black text-white overflow-hidden">
+
+
+      <main className="flex h-[calc(100dvh-64px)] md:h-screen w-full bg-black text-white overflow-hidden">
         {/* Left Sidebar */}
         <Sidebar 
           isVideoFeedOpen={isVideoFeedOpen}
@@ -612,8 +558,8 @@ function ShelbyApp() {
         <div className="flex-1 h-full flex flex-col overflow-hidden">
           <div className="flex w-full h-full overflow-hidden">
             {/* Main Content (Center) - Centered between sidebars */}
-            <div className="flex-1 flex justify-center pl-28 xl:pl-36 overflow-y-auto scroll-smooth no-scrollbar bg-black h-full">
-              <div className={`w-full h-full flex flex-col justify-center transition-all duration-300 ${
+            <div className="flex-1 flex justify-center pl-0 md:pl-28 xl:pl-36 overflow-y-auto scroll-smooth no-scrollbar bg-black h-full">
+              <div className={`w-full h-full flex flex-col justify-start md:justify-center transition-all duration-300 ${
                 isUploadPageOpen ? 'max-w-[500px]' : 'max-w-[1100px]'
               }`}>
                 {isUploadPageOpen ? (
@@ -703,33 +649,79 @@ function ShelbyApp() {
         </div>
       </main>
 
-      {/* Mobile Navigation */}
-      <nav className={`md:hidden fixed bottom-0 w-full ${isVideoFeedOpen || isUploadPageOpen ? 'bg-black shadow-none' : 'bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0px_-10px_30px_rgba(0,0,0,0.05)]'} flex justify-around items-center h-[64px] px-6 z-[120]`}>
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="md:hidden fixed bottom-0 w-full z-[120] flex justify-around items-center px-3 pt-1.5 pb-safe bg-black/95 backdrop-blur-xl border-t border-white/10 h-[64px] pointer-events-auto">
+        {/* Home */}
         <button 
           onClick={() => { setIsVideoFeedOpen(true); setIsMediaGalleryOpen(false); setIsUploadPageOpen(false); }}
-          className={`flex flex-col items-center gap-1 ${isVideoFeedOpen && !isMediaGalleryOpen && !isUploadPageOpen ? 'text-[#E11D48]' : 'text-on-surface-variant/60'}`}
+          className={`flex flex-col items-center justify-center transition-all duration-150 outline-none ${
+            isVideoFeedOpen && !isMediaGalleryOpen && !isUploadPageOpen ? 'text-white scale-105' : 'text-white/50 hover:text-white/80'
+          }`}
         >
-          <Home className="w-5 h-5" />
-          <span className="text-[9px] font-bold uppercase">Home</span>
+          <span 
+            className="material-symbols-outlined text-2xl" 
+            style={{ fontVariationSettings: isVideoFeedOpen && !isMediaGalleryOpen && !isUploadPageOpen ? "'FILL' 1" : "'FILL' 0" }}
+          >
+            home
+          </span>
+          <span className="font-mono text-[10px] font-bold tracking-wider mt-0.5">Home</span>
         </button>
+
+        {/* Discover (Placeholder) */}
+        <button 
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            // Inactive placeholder for future discover features
+          }}
+          className="flex flex-col items-center justify-center text-white/50 transition-all duration-150 outline-none cursor-default"
+        >
+          <span className="material-symbols-outlined text-2xl">explore</span>
+          <span className="font-mono text-[10px] font-bold tracking-wider mt-0.5">Discover</span>
+        </button>
+
+        {/* Pulse Button (Upload/Record) */}
         <button 
           onClick={() => { setIsUploadPageOpen(true); setIsVideoFeedOpen(false); setIsMediaGalleryOpen(false); }}
-          className="relative flex flex-col items-center justify-center shrink-0"
+          className="flex items-center justify-center transition-transform hover:scale-105 active:scale-95 -mt-3 outline-none"
         >
-          <div className="relative h-8 w-[40px] active:scale-90 transition-transform duration-200">
-            <div className="absolute inset-y-0 -left-[2px] right-[2px] bg-[#E11D48]/80 rounded-md opacity-100"></div>
-            <div className="absolute inset-y-0 -right-[2px] left-[2px] bg-[#E11D48] rounded-md opacity-100"></div>
-            <div className={`relative h-full w-full ${isVideoFeedOpen || isUploadPageOpen ? 'bg-white' : 'bg-on-surface'} rounded-md flex items-center justify-center`}>
-              <Add className={`w-5 h-5 ${isVideoFeedOpen || isUploadPageOpen ? 'text-black font-extrabold' : 'text-surface'} stroke-[4]`} strokeWidth={4} />
-            </div>
+          <div className="w-12 h-9 rounded-xl bg-white flex items-center justify-center relative overflow-hidden group shadow-lg">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#00f2ea] to-[#FE2C55] opacity-90 group-hover:opacity-100 transition-opacity"></div>
+            <span className="material-symbols-outlined text-black font-bold text-2xl relative z-10">add</span>
           </div>
         </button>
+
+        {/* Posts */}
         <button 
           onClick={() => { setIsMediaGalleryOpen(true); setIsVideoFeedOpen(false); setIsUploadPageOpen(false); }}
-          className={`flex flex-col items-center gap-1 ${isMediaGalleryOpen && !isUploadPageOpen ? 'text-[#E11D48]' : (isVideoFeedOpen || isUploadPageOpen ? 'text-white/60' : 'text-on-surface-variant/60')}`}
+          className={`flex flex-col items-center justify-center transition-all duration-150 outline-none ${
+            isMediaGalleryOpen && !isUploadPageOpen ? 'text-white scale-105' : 'text-white/50 hover:text-white/80'
+          }`}
         >
-          <VideoLibrary className="w-5 h-5" />
-          <span className="text-[9px] font-bold uppercase">Posts</span>
+          <span 
+            className="material-symbols-outlined text-2xl"
+            style={{ fontVariationSettings: isMediaGalleryOpen ? "'FILL' 1" : "'FILL' 0" }}
+          >
+            video_library
+          </span>
+          <span className="font-mono text-[10px] font-bold tracking-wider mt-0.5">Posts</span>
+        </button>
+
+        {/* Profile */}
+        <button 
+          onClick={() => { 
+            if (connected) {
+              setIsMediaGalleryOpen(true); 
+              setIsVideoFeedOpen(false); 
+              setIsUploadPageOpen(false); 
+            } else {
+              setIsWalletModalOpen(true);
+            }
+          }}
+          className="flex flex-col items-center justify-center text-white/50 hover:text-white transition-all duration-150 outline-none"
+        >
+          <span className="material-symbols-outlined text-2xl">person</span>
+          <span className="font-mono text-[10px] font-bold tracking-wider mt-0.5">Profile</span>
         </button>
       </nav>
 
