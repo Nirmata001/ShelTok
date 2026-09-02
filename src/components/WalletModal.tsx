@@ -25,7 +25,7 @@ export default function WalletModal({ isOpen, onClose, wallets, connect }: Walle
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className="absolute top-16 right-4 z-[80] w-full max-w-xs"
+          className="hidden md:block absolute top-16 right-4 z-[80] w-full max-w-xs"
           onClick={onClose}
         >
           <motion.div

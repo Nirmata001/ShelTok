@@ -36,6 +36,7 @@ import DeleteModal from './components/DeleteModal';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import NotificationToast from './components/NotificationToast';
+import ProfilePage from './components/ProfilePage';
 
 const getFileExtension = (fileName: string): string => {
   const lowercaseName = (fileName || '').toLowerCase();
@@ -140,9 +141,22 @@ function ShelbyApp() {
   const [isDragging, setIsDragging] = useState(false);
   const [isMediaGalleryOpen, setIsMediaGalleryOpen] = useState(false);
   const [isVideoFeedOpen, setIsVideoFeedOpen] = useState(true);
+  const [isProfilePageOpen, setIsProfilePageOpen] = useState(false);
   const [feedFilter, setFeedFilter] = useState<'explore' | 'following'>('explore');
   const [isFeedMuted, setIsFeedMuted] = useState(true);
   const [followedUsers, setFollowedUsers] = useState<Record<string, boolean>>({});
+
+  const handleOpenWalletConnect = () => {
+    if (isMobile) {
+      setIsProfilePageOpen(true);
+      setIsUploadPageOpen(false);
+      setIsMediaGalleryOpen(false);
+      setIsVideoFeedOpen(false);
+      setIsWalletModalOpen(false);
+    } else {
+      setIsWalletModalOpen(true);
+    }
+  };
 
   // Account specific uploads state
   const [blobs, setBlobs] = useState<any[]>([]);
@@ -498,6 +512,7 @@ function ShelbyApp() {
   }, []);
 
   const handleSidebarNavigate = (view: 'explore' | 'following' | 'posts' | 'live' | 'upload') => {
+    setIsProfilePageOpen(false);
     if (view === 'explore') {
       setFeedFilter('explore');
       setIsVideoFeedOpen(true);
@@ -562,7 +577,7 @@ function ShelbyApp() {
             {/* Main Content (Center) - Centered between sidebars */}
             <div className="flex-1 flex justify-center pl-0 md:pl-28 xl:pl-36 overflow-y-auto scroll-smooth no-scrollbar bg-black h-full">
               <div className={`w-full h-full flex flex-col justify-start md:justify-center transition-all duration-300 ${
-                isUploadPageOpen ? 'max-w-[500px]' : 'max-w-[1100px]'
+                isUploadPageOpen || isProfilePageOpen ? 'max-w-[500px]' : 'max-w-[1100px]'
               }`}>
                 {isUploadPageOpen ? (
                   <div className="w-full h-full">
@@ -581,7 +596,7 @@ function ShelbyApp() {
                       setExplorerLink={setExplorerLink}
                       handleStartUpload={handleStartUpload}
                       fileInputRef={fileInputRef}
-                      onConnectWallet={() => setIsWalletModalOpen(true)}
+                      onConnectWallet={handleOpenWalletConnect}
                     />
                   </div>
                 ) : isMediaGalleryOpen ? (
@@ -594,12 +609,37 @@ function ShelbyApp() {
                         setIsVideoFeedOpen(true);
                       }} 
                       isConnected={connected}
-                      onConnect={() => {
-                        setIsMediaGalleryOpen(false);
-                        setIsWalletModalOpen(true);
-                      }}
+                      onConnect={handleOpenWalletConnect}
                       onDelete={handleDeleteBlob}
                       isEmbedded={true}
+                    />
+                  </div>
+                ) : isProfilePageOpen ? (
+                  <div className="w-full h-full">
+                    <ProfilePage
+                      account={account}
+                      connected={connected}
+                      wallets={wallets}
+                      connect={connect}
+                      disconnect={disconnect}
+                      blobs={blobs}
+                      onNavigateToPosts={() => {
+                        setIsProfilePageOpen(false);
+                        setIsMediaGalleryOpen(true);
+                        setIsVideoFeedOpen(false);
+                        setIsUploadPageOpen(false);
+                      }}
+                      onNavigateToUpload={() => {
+                        setIsProfilePageOpen(false);
+                        setIsUploadPageOpen(true);
+                        setIsMediaGalleryOpen(false);
+                        setIsVideoFeedOpen(false);
+                      }}
+                      onClose={() => {
+                        setIsProfilePageOpen(false);
+                        setIsVideoFeedOpen(true);
+                      }}
+                      triggerNotification={triggerNotification}
                     />
                   </div>
                 ) : (
@@ -628,7 +668,7 @@ function ShelbyApp() {
             {/* Right Section (Third Column) */}
             <aside className="hidden lg:flex w-80 flex-col justify-center items-end pr-10 h-full">
               {/* Scroll Navigation Buttons */}
-              {isVideoFeedOpen && !isMediaGalleryOpen && !isUploadPageOpen && (
+              {isVideoFeedOpen && !isMediaGalleryOpen && !isUploadPageOpen && !isProfilePageOpen && (
                 <div className="flex flex-col gap-4 animate-fade-in">
                   <button 
                     onClick={() => window.dispatchEvent(new CustomEvent('feed-scroll-prev'))}
@@ -655,14 +695,19 @@ function ShelbyApp() {
       <nav className="md:hidden fixed bottom-0 w-full z-[120] flex justify-around items-center px-3 pt-1.5 pb-safe bg-black/95 backdrop-blur-xl border-t border-white/10 h-[64px] pointer-events-auto">
         {/* Home */}
         <button 
-          onClick={() => { setIsVideoFeedOpen(true); setIsMediaGalleryOpen(false); setIsUploadPageOpen(false); }}
+          onClick={() => { 
+            setIsVideoFeedOpen(true); 
+            setIsMediaGalleryOpen(false); 
+            setIsUploadPageOpen(false); 
+            setIsProfilePageOpen(false); 
+          }}
           className={`flex flex-col items-center justify-center transition-all duration-150 outline-none ${
-            isVideoFeedOpen && !isMediaGalleryOpen && !isUploadPageOpen ? 'text-white scale-105' : 'text-white/50 hover:text-white/80'
+            isVideoFeedOpen && !isMediaGalleryOpen && !isUploadPageOpen && !isProfilePageOpen ? 'text-white scale-105' : 'text-white/50 hover:text-white/80'
           }`}
         >
           <Home 
             className="w-5 h-5" 
-            fill={isVideoFeedOpen && !isMediaGalleryOpen && !isUploadPageOpen ? "currentColor" : "none"} 
+            fill={isVideoFeedOpen && !isMediaGalleryOpen && !isUploadPageOpen && !isProfilePageOpen ? "currentColor" : "none"} 
             strokeWidth={2.2} 
           />
           <span className="font-mono text-[10px] font-bold tracking-wider mt-0.5">Home</span>
@@ -683,7 +728,12 @@ function ShelbyApp() {
 
         {/* Pulse Button (Upload/Record) */}
         <button 
-          onClick={() => { setIsUploadPageOpen(true); setIsVideoFeedOpen(false); setIsMediaGalleryOpen(false); }}
+          onClick={() => { 
+            setIsUploadPageOpen(true); 
+            setIsVideoFeedOpen(false); 
+            setIsMediaGalleryOpen(false); 
+            setIsProfilePageOpen(false); 
+          }}
           className="flex items-center justify-center transition-transform hover:scale-105 active:scale-95 -mt-3 outline-none"
         >
           <div className="w-12 h-9 rounded-xl bg-white flex items-center justify-center relative overflow-hidden group shadow-lg">
@@ -694,14 +744,19 @@ function ShelbyApp() {
 
         {/* Posts */}
         <button 
-          onClick={() => { setIsMediaGalleryOpen(true); setIsVideoFeedOpen(false); setIsUploadPageOpen(false); }}
+          onClick={() => { 
+            setIsMediaGalleryOpen(true); 
+            setIsVideoFeedOpen(false); 
+            setIsUploadPageOpen(false); 
+            setIsProfilePageOpen(false); 
+          }}
           className={`flex flex-col items-center justify-center transition-all duration-150 outline-none ${
-            isMediaGalleryOpen && !isUploadPageOpen ? 'text-white scale-105' : 'text-white/50 hover:text-white/80'
+            isMediaGalleryOpen && !isUploadPageOpen && !isProfilePageOpen ? 'text-white scale-105' : 'text-white/50 hover:text-white/80'
           }`}
         >
           <Film 
             className="w-5 h-5" 
-            fill={isMediaGalleryOpen && !isUploadPageOpen ? "currentColor" : "none"} 
+            fill={isMediaGalleryOpen && !isUploadPageOpen && !isProfilePageOpen ? "currentColor" : "none"} 
             strokeWidth={2} 
           />
           <span className="font-mono text-[10px] font-bold tracking-wider mt-0.5">Posts</span>
@@ -710,17 +765,21 @@ function ShelbyApp() {
         {/* Profile */}
         <button 
           onClick={() => { 
-            if (connected) {
-              setIsMediaGalleryOpen(true); 
-              setIsVideoFeedOpen(false); 
-              setIsUploadPageOpen(false); 
-            } else {
-              setIsWalletModalOpen(true);
-            }
+            setIsProfilePageOpen(true);
+            setIsVideoFeedOpen(false); 
+            setIsMediaGalleryOpen(false); 
+            setIsUploadPageOpen(false); 
+            setIsWalletModalOpen(false);
           }}
-          className="flex flex-col items-center justify-center text-white/50 hover:text-white transition-all duration-150 outline-none"
+          className={`flex flex-col items-center justify-center transition-all duration-150 outline-none ${
+            isProfilePageOpen ? 'text-white scale-105' : 'text-white/50 hover:text-white/80'
+          }`}
         >
-          <User className="w-5 h-5" strokeWidth={2} />
+          <User 
+            className="w-5 h-5" 
+            fill={isProfilePageOpen ? "currentColor" : "none"} 
+            strokeWidth={2} 
+          />
           <span className="font-mono text-[10px] font-bold tracking-wider mt-0.5">Profile</span>
         </button>
       </nav>

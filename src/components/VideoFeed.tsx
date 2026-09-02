@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Play, 
   ChevronLeft,
-  CheckCircle,
   Film,
   Plus,
   Heart,
@@ -13,6 +12,7 @@ import {
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
 import { shelbyAuthHeaders, isShelbySWReady } from '../services/shelbyService';
+import NotificationToast from './NotificationToast';
 
 interface VideoFeedProps {
   onClose: () => void;
@@ -1131,19 +1131,10 @@ export default function VideoFeed({
       )}
 
       {/* Notification Toast */}
-      <AnimatePresence>
-        {notification.show && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-24 md:bottom-12 left-1/2 -translate-x-1/2 z-[120] bg-[#E11D48] text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-white/20 backdrop-blur-md"
-          >
-            <CheckCircle className="w-5 h-5" />
-            <span className="font-bold text-sm tracking-tight">{notification.message}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <NotificationToast 
+        show={notification.show} 
+        message={notification.message} 
+      />
 
       <style dangerouslySetInnerHTML={{ __html: `
         .hide-scrollbar::-webkit-scrollbar {
