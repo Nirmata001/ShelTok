@@ -577,7 +577,9 @@ function ShelbyApp() {
             {/* Main Content (Center) - Centered between sidebars */}
             <div className="flex-1 flex justify-center px-2 md:px-4 overflow-y-auto scroll-smooth no-scrollbar bg-black h-full">
               <div className={`w-full h-full flex flex-col justify-start md:justify-center transition-all duration-300 ${
-                isUploadPageOpen || isProfilePageOpen ? 'max-w-[500px]' : 'w-full'
+                isUploadPageOpen || isProfilePageOpen 
+                  ? 'max-w-[500px] md:-translate-x-8 lg:-translate-x-12 xl:-translate-x-16' 
+                  : 'w-full'
               }`}>
                 {isUploadPageOpen ? (
                   <div className="w-full h-full">
