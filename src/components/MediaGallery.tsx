@@ -395,7 +395,7 @@ export default function MediaGallery({
       {/* Grid Content */}
       <div className="flex-1 overflow-y-auto p-6 [scrollbar-width:thin] [scrollbar-color:rgba(38,38,38,0.7)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-neutral-800/70 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
         {!isConnected ? (
-          <div className="h-full flex flex-col items-center justify-center text-center gap-6 max-w-md mx-auto">
+          <div className="h-full flex flex-col items-center justify-center text-center gap-6 max-w-md mx-auto -translate-y-10 md:-translate-y-16 lg:-translate-y-20 -translate-x-6 md:-translate-x-20 lg:-translate-x-24 xl:-translate-x-28 transition-all duration-300">
             <div className="w-20 h-20 bg-surface-container-high rounded-full flex items-center justify-center">
               <ImageIcon className="w-10 h-10 text-white" />
             </div>
@@ -405,7 +405,7 @@ export default function MediaGallery({
             </div>
           </div>
         ) : mediaBlobs.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center gap-4 opacity-50">
+          <div className="h-full flex flex-col items-center justify-center text-center gap-4 opacity-50 -translate-y-10 md:-translate-y-16 lg:-translate-y-20 -translate-x-6 md:-translate-x-20 lg:-translate-x-24 xl:-translate-x-28 transition-all duration-300">
             <div className="w-20 h-20 bg-surface-container-high rounded-full flex items-center justify-center">
               <ImageIcon className="w-10 h-10 text-on-surface-variant" />
             </div>

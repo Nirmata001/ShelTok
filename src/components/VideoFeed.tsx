@@ -1058,7 +1058,7 @@ export default function VideoFeed({
 
       {isLoading ? (
         <div className="flex-1 w-full h-full flex items-center justify-center md:py-1 overflow-hidden">
-          <div className="flex items-end md:space-x-4 space-x-0 justify-center relative w-full h-full max-h-[calc(100vh-25px)]">
+          <div className="flex items-end md:space-x-4 space-x-0 justify-center relative w-full h-full max-h-[calc(100vh-25px)] -translate-y-10 md:-translate-y-16 lg:-translate-y-20 -translate-x-6 md:-translate-x-20 lg:-translate-x-24 xl:-translate-x-28 transition-all duration-300">
             <div className="bg-white/5 animate-pulse rounded-xl w-full md:w-[320px] xl:w-[400px] h-full"></div>
             <div className="hidden md:flex flex-col items-center space-y-5 pb-2 z-30">
               <div className="w-12 h-12 rounded-full bg-white/5 animate-pulse mb-2"></div>
@@ -1071,7 +1071,7 @@ export default function VideoFeed({
           </div>
         </div>
       ) : shuffledVideos.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center gap-6 p-12 text-center">
+        <div className="flex-1 flex flex-col items-center justify-center gap-6 p-12 text-center -translate-y-10 md:-translate-y-16 lg:-translate-y-20 -translate-x-6 md:-translate-x-20 lg:-translate-x-24 xl:-translate-x-28 transition-all duration-300">
           <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center">
             <Play className="w-10 h-10 text-white/20" />
           </div>
