@@ -8,7 +8,8 @@ import {
   Heart,
   Bookmark,
   Volume2,
-  VolumeX
+  VolumeX,
+  Share2
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
 import { shelbyAuthHeaders, isShelbySWReady } from '../services/shelbyService';
@@ -279,19 +280,21 @@ const VideoItem = memo(({
   };
 
   return (
-    <div className="relative h-full w-full bg-black flex items-center justify-center p-0 md:py-1 overflow-hidden snap-start">
-      <div className={`flex md:space-x-4 space-x-0 justify-center items-center md:items-end relative transition-all duration-300 w-full h-full ${
-        aspectRatio === 'portrait' 
-          ? 'md:max-h-[calc(100vh-25px)]' 
-          : 'md:h-auto md:max-h-[calc(100vh-25px)]'
+    <div className="relative h-full w-full bg-black flex items-center justify-center p-0 md:py-1 snap-start">
+      <div className={`flex md:space-x-4 space-x-0 justify-center items-center md:items-end relative transition-all duration-300 w-full h-full max-w-full ${
+        aspectRatio === 'landscape' 
+          ? 'md:h-auto md:max-h-[calc(100vh-25px)] md:-translate-x-6 lg:-translate-x-8 xl:-translate-x-12' 
+          : aspectRatio === 'square'
+            ? 'md:h-auto md:max-h-[calc(100vh-25px)] md:-translate-x-8 lg:-translate-x-12 xl:-translate-x-16'
+            : 'md:max-h-[calc(100vh-25px)] md:-translate-x-8 lg:-translate-x-12 xl:-translate-x-16'
       }`}>
         
         {/* Video Card Container */}
         <div className={`video-container bg-tiktok-dark rounded-none md:rounded-xl overflow-hidden relative flex items-center justify-center border-0 md:border md:border-white/10 shadow-2xl transition-all duration-300 w-full h-full ${
           aspectRatio === 'landscape' 
-            ? 'md:w-[720px] lg:w-[820px] xl:w-[900px] md:aspect-[16/9] md:h-auto md:max-h-[calc(100vh-25px)]' 
+            ? 'md:w-[862px] lg:w-[983px] xl:w-[1079px] max-w-[calc(100%-80px)] md:aspect-[16/9] md:h-auto md:max-h-[calc(100vh-25px)]' 
             : aspectRatio === 'square' 
-              ? 'md:w-[440px] lg:w-[480px] xl:w-[520px] md:aspect-square md:h-auto md:max-h-[calc(100vh-25px)]' 
+              ? 'md:w-[572px] lg:w-[624px] xl:w-[676px] max-w-[calc(100%-80px)] md:aspect-square md:h-auto md:max-h-[calc(100vh-25px)]' 
               : 'md:w-[320px] xl:w-[400px]'
         }`}>
           {shouldLoad ? (
@@ -515,7 +518,7 @@ const VideoItem = memo(({
         </div>
 
         {/* RIGHT SIDE ENGAGEMENT BAR (Desktop) */}
-        <div className="hidden md:flex flex-col items-center space-y-4 pb-2 z-30 pointer-events-auto">
+        <div className="hidden md:flex flex-col items-center space-y-4 pb-2 z-30 pointer-events-auto flex-shrink-0">
           {/* Profile */}
           <div className="relative mb-2">
             <div className="w-12 h-12 rounded-full border-2 border-white overflow-hidden bg-black flex items-center justify-center shadow-lg">
@@ -1085,7 +1088,7 @@ export default function VideoFeed({
         </div>
       ) : (
         <>
-          <div className={`relative flex ${isEmbedded ? 'h-full' : 'h-[calc(100dvh-64px)] md:h-[100dvh]'} w-full md:max-w-[880px] lg:max-w-[1000px] xl:max-w-[1100px] flex-col overflow-y-scroll overflow-x-hidden snap-y snap-mandatory scrollbar-none outline-none overflow-hidden`} ref={containerRef} style={{
+          <div className={`relative flex ${isEmbedded ? 'h-full' : 'h-[calc(100dvh-64px)] md:h-[100dvh]'} w-full flex-col overflow-y-scroll snap-y snap-mandatory scrollbar-none outline-none`} ref={containerRef} style={{
             scrollSnapType: 'y mandatory',
             overflowY: 'scroll',
             scrollbarWidth: 'none',
@@ -1103,7 +1106,6 @@ export default function VideoFeed({
                   height: '100%',
                   width: '100%',
                   scrollSnapStop: 'always',
-                  contain: 'strict',
                   flexShrink: 0,
                 }}
               >

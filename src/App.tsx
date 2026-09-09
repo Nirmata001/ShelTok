@@ -575,9 +575,9 @@ function ShelbyApp() {
         <div className="flex-1 h-full flex flex-col overflow-hidden">
           <div className="flex w-full h-full overflow-hidden">
             {/* Main Content (Center) - Centered between sidebars */}
-            <div className="flex-1 flex justify-center pl-0 md:pl-28 xl:pl-36 overflow-y-auto scroll-smooth no-scrollbar bg-black h-full">
+            <div className="flex-1 flex justify-center px-2 md:px-4 overflow-y-auto scroll-smooth no-scrollbar bg-black h-full">
               <div className={`w-full h-full flex flex-col justify-start md:justify-center transition-all duration-300 ${
-                isUploadPageOpen || isProfilePageOpen ? 'max-w-[500px]' : 'max-w-[1100px]'
+                isUploadPageOpen || isProfilePageOpen ? 'max-w-[500px]' : 'w-full'
               }`}>
                 {isUploadPageOpen ? (
                   <div className="w-full h-full">
@@ -665,28 +665,27 @@ function ShelbyApp() {
               </div>
             </div>
 
-            {/* Right Section (Third Column) */}
-            <aside className="hidden lg:flex w-80 flex-col justify-center items-end pr-10 h-full">
-              {/* Scroll Navigation Buttons */}
-              {isVideoFeedOpen && !isMediaGalleryOpen && !isUploadPageOpen && !isProfilePageOpen && (
-                <div className="flex flex-col gap-4 animate-fade-in">
+            {/* Right Section - Floating Scroll Navigation Buttons at extreme screen edge */}
+            {isVideoFeedOpen && !isMediaGalleryOpen && !isUploadPageOpen && !isProfilePageOpen && (
+              <aside className="pointer-events-none fixed right-2 xl:right-3 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col items-end">
+                <div className="flex flex-col gap-2.5 animate-fade-in pointer-events-auto">
                   <button 
                     onClick={() => window.dispatchEvent(new CustomEvent('feed-scroll-prev'))}
-                    className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 hover:scale-105 active:scale-90 transition-all flex items-center justify-center text-white cursor-pointer shadow-lg outline-none focus:outline-none"
+                    className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 hover:scale-105 active:scale-90 transition-all flex items-center justify-center text-white cursor-pointer shadow-lg outline-none focus:outline-none backdrop-blur-md border border-white/10"
                     title="Previous Video"
                   >
-                    <ChevronUp className="w-6 h-6 text-white/90" />
+                    <ChevronUp className="w-4.5 h-4.5 text-white/90" />
                   </button>
                   <button 
                     onClick={() => window.dispatchEvent(new CustomEvent('feed-scroll-next'))}
-                    className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 hover:scale-105 active:scale-90 transition-all flex items-center justify-center text-white cursor-pointer shadow-lg outline-none focus:outline-none"
+                    className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 hover:scale-105 active:scale-90 transition-all flex items-center justify-center text-white cursor-pointer shadow-lg outline-none focus:outline-none backdrop-blur-md border border-white/10"
                     title="Next Video"
                   >
-                    <ChevronDown className="w-6 h-6 text-white/90" />
+                    <ChevronDown className="w-4.5 h-4.5 text-white/90" />
                   </button>
                 </div>
-              )}
-            </aside>
+              </aside>
+            )}
           </div>
         </div>
       </main>

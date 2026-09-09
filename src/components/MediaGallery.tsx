@@ -278,27 +278,36 @@ const MediaItem = ({ blob, walletAddress, onDownload, onDelete }: MediaItemProps
         )
       )}
       
-      <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex justify-end items-center gap-2 z-10">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDownload(blob);
-          }}
-          className="p-1.5 bg-white/10 hover:bg-white/20 text-white rounded-md backdrop-blur-sm transition-all"
-          title="Download"
-        >
-          <Download className="w-3.5 h-3.5" />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(blob);
-          }}
-          className="p-1.5 bg-white/10 hover:bg-error/20 text-white hover:text-error rounded-md backdrop-blur-sm transition-all"
-          title="Delete"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
+      {/* Action bar - permanently visible */}
+      <div className="absolute inset-x-0 bottom-0 p-2.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent flex justify-between items-center gap-2 z-10">
+        <span className="text-[11px] text-white/80 font-mono truncate max-w-[90px] sm:max-w-[130px] px-1 font-medium" title={fileName}>
+          {fileName}
+        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDownload(blob);
+            }}
+            className="p-1.5 sm:p-2 bg-white/20 hover:bg-white/30 active:scale-95 text-white rounded-lg backdrop-blur-md transition-all shadow-sm"
+            title="Download"
+            aria-label="Download"
+          >
+            <Download className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(blob);
+            }}
+            className="px-2 py-1.5 sm:py-2 bg-red-600 hover:bg-red-500 active:scale-95 text-white rounded-lg backdrop-blur-md transition-all shadow-md flex items-center gap-1.5 border border-red-500/50"
+            title="Delete on-chain"
+            aria-label="Delete on-chain"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Delete</span>
+          </button>
+        </div>
       </div>
     </motion.div>
   );
@@ -406,7 +415,7 @@ export default function MediaGallery({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 max-w-4xl mx-auto">
             {mediaBlobs.map((blob, index) => (
               <MediaItem 
                 key={blob.blobNameSuffix || index} 
