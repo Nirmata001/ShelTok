@@ -415,7 +415,7 @@ export default function MediaGallery({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 max-w-4xl mx-auto -translate-x-2 sm:-translate-x-3 md:-translate-x-8 lg:-translate-x-16 xl:-translate-x-20 2xl:-translate-x-24 transition-all duration-300">
             {mediaBlobs.map((blob, index) => (
               <MediaItem 
                 key={blob.blobNameSuffix || index} 
