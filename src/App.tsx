@@ -540,7 +540,7 @@ function ShelbyApp() {
   };
 
   return (
-    <div className="bg-background text-on-background antialiased overflow-x-hidden min-h-screen">
+    <div className="bg-black text-white antialiased overflow-x-hidden min-h-screen">
       {/* PWA Install Banner */}
       <InstallBanner 
         show={showInstallBanner} 
@@ -577,9 +577,11 @@ function ShelbyApp() {
             {/* Main Content (Center) - Centered between sidebars */}
             <div className="flex-1 flex justify-center px-2 md:px-4 overflow-y-auto scroll-smooth no-scrollbar bg-black h-full">
               <div className={`w-full h-full flex flex-col justify-start md:justify-center transition-all duration-300 ${
-                isUploadPageOpen || isProfilePageOpen 
-                  ? 'max-w-[500px] md:-translate-x-8 lg:-translate-x-12 xl:-translate-x-16' 
-                  : 'w-full'
+                isUploadPageOpen 
+                  ? 'max-w-[500px] md:-translate-x-12 lg:-translate-x-16 xl:-translate-x-20' 
+                  : isProfilePageOpen
+                    ? 'max-w-[500px] md:-translate-x-8 lg:-translate-x-12 xl:-translate-x-16'
+                    : 'w-full'
               }`}>
                 {isUploadPageOpen ? (
                   <div className="w-full h-full">
@@ -693,7 +695,7 @@ function ShelbyApp() {
       </main>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 w-full z-[120] flex justify-around items-center px-3 pt-1.5 pb-safe bg-black/95 backdrop-blur-xl border-t border-white/10 h-[64px] pointer-events-auto">
+      <nav className="md:hidden fixed bottom-0 w-full z-[120] flex justify-around items-center px-3 pt-1.5 pb-safe bg-black border-t border-white/[0.06] h-[64px] pointer-events-auto">
         {/* Home */}
         <button 
           onClick={() => { 

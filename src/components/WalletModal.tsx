@@ -32,23 +32,23 @@ export default function WalletModal({ isOpen, onClose, wallets, connect }: Walle
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="w-full max-w-xs bg-surface-container-lowest rounded-3xl shadow-[0px_40px_80px_rgba(254,44,85,0.15)] overflow-hidden flex flex-col"
+            className="w-full max-w-xs bg-black text-white border border-white/[0.08] rounded-3xl shadow-[0px_25px_60px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-5 flex justify-between items-center bg-surface-container-lowest shadow-sm">
+            <div className="p-5 flex justify-between items-center bg-black border-b border-white/[0.06]">
               <div>
-                <h2 className="text-lg font-black tracking-tighter">Connect Wallet</h2>
-                <p className="text-[9px] text-on-surface-variant uppercase font-bold tracking-wider">Select your Aptos wallet</p>
+                <h2 className="text-lg font-black tracking-tighter text-white">Connect Wallet</h2>
+                <p className="text-[9px] text-white/40 uppercase font-bold tracking-wider">Select your Aptos wallet</p>
               </div>
               <button
-                className="p-1.5 hover:bg-surface-container-low rounded-full transition-colors text-on-surface-variant"
+                className="p-1.5 hover:bg-white/10 rounded-full transition-colors text-white/60 hover:text-white"
                 onClick={onClose}
               >
                 <Close className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-5 flex flex-col gap-2.5">
+            <div className="p-5 flex flex-col gap-2.5 bg-black">
               {POPULAR_WALLETS.map((wallet) => {
                 const detectedWallet = wallets?.find(w => w.name.toLowerCase().includes(wallet.name.toLowerCase()));
                 const isInstalled = !!detectedWallet;
@@ -56,10 +56,10 @@ export default function WalletModal({ isOpen, onClose, wallets, connect }: Walle
                 return (
                   <div 
                     key={wallet.name}
-                    className={`flex items-center justify-between p-3.5 rounded-2xl transition-all shadow-sm ${
+                    className={`flex items-center justify-between p-3.5 rounded-2xl transition-all border border-white/[0.06] ${
                       isInstalled 
-                        ? 'bg-surface-container-low hover:bg-[#E11D48]/5 cursor-pointer group' 
-                        : 'opacity-60 bg-surface-container-low'
+                        ? 'bg-neutral-950 hover:bg-white/5 cursor-pointer group' 
+                        : 'opacity-40 bg-neutral-950/60'
                     }`}
                     onClick={() => {
                       if (isInstalled) {

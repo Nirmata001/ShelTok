@@ -124,20 +124,16 @@ export default function ProfilePage({
         /* CONNECTED VIEW */
         <div className="flex flex-col gap-5">
           {/* Identity Card */}
-          <div className="relative overflow-hidden rounded-3xl bg-neutral-900/90 border border-white/10 p-5 shadow-2xl backdrop-blur-xl">
-            {/* Ambient background glow */}
-            <div className="absolute -top-12 -right-12 w-36 h-36 bg-[#FE2C55]/15 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-[#00f2ea]/15 rounded-full blur-3xl pointer-events-none" />
-
+          <div className="relative overflow-hidden rounded-3xl bg-black border border-white/[0.08] p-5 shadow-2xl">
             <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
               {/* Avatar circle */}
               <div className="relative shrink-0">
-                <div className="w-18 h-18 rounded-2xl bg-gradient-to-tr from-[#FE2C55] via-purple-600 to-[#00f2ea] p-[2px] shadow-lg">
-                  <div className="w-full h-full rounded-[14px] bg-neutral-950 flex items-center justify-center">
+                <div className="w-18 h-18 rounded-2xl bg-white/[0.08] p-[1px] shadow-lg">
+                  <div className="w-full h-full rounded-[14px] bg-black flex items-center justify-center">
                     <Person className="w-8 h-8 text-white/90" />
                   </div>
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-2 border-neutral-950 flex items-center justify-center" title="Connected">
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-2 border-black flex items-center justify-center" title="Connected">
                   <ShieldCheck className="w-3.5 h-3.5 text-white stroke-[2.5]" />
                 </div>
               </div>
@@ -296,8 +292,8 @@ export default function ProfilePage({
         /* DISCONNECTED / WALLET SELECTION VIEW */
         <div className="flex flex-col gap-5">
           {/* Guest Identity Card */}
-          <div className="rounded-3xl bg-neutral-900/80 border border-white/10 p-5 text-center flex flex-col items-center gap-3 backdrop-blur-xl">
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/30">
+          <div className="rounded-3xl bg-black border border-white/[0.08] p-5 text-center flex flex-col items-center gap-3">
+            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/[0.08] flex items-center justify-center text-white/30">
               <Person className="w-8 h-8" />
             </div>
             <div>
@@ -309,7 +305,7 @@ export default function ProfilePage({
           </div>
 
           {/* Dedicated Wallets Page List */}
-          <div className="rounded-3xl bg-neutral-900/60 border border-white/10 p-5 flex flex-col gap-3">
+          <div className="rounded-3xl bg-black border border-white/[0.08] p-5 flex flex-col gap-3">
             <div className="flex items-center justify-between pb-2 border-b border-white/10">
               <div className="flex items-center gap-2">
                 <Wallet className="w-4 h-4 text-[#FE2C55]" />

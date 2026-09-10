@@ -365,11 +365,11 @@ export default function MediaGallery({
         initial={isEmbedded ? { opacity: 0 } : { scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={isEmbedded ? { opacity: 0 } : { scale: 0.95, opacity: 0 }}
-        className={`${isEmbedded ? 'w-full h-full rounded-2xl' : 'w-full max-w-5xl max-h-[85vh] h-full rounded-[2.5rem] shadow-2xl'} bg-background flex flex-col relative overflow-hidden`}
+        className={`${isEmbedded ? 'w-full h-full rounded-2xl' : 'w-full max-w-5xl max-h-[85vh] h-full rounded-[2.5rem] shadow-2xl'} bg-black text-white flex flex-col relative overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <header className="bg-surface-container-lowest sticky top-0 z-10 shadow-sm">
+        <header className="bg-black sticky top-0 z-10 border-b border-white/[0.06]">
           <div className={`max-w-full ${isEmbedded ? 'px-6 py-3' : 'px-10 py-4'} flex items-center justify-between`}>
             <div className="flex items-center gap-4">
               {!isEmbedded && (

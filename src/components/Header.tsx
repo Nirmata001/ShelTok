@@ -27,7 +27,7 @@ export default function Header({
         <div className="relative">
           <button 
             onClick={() => setDropdownOpen(!isDropdownOpen)}
-            className="bg-black hover:bg-neutral-900 border border-white/15 text-white px-4 py-2 rounded-xl font-bold transition text-sm flex items-center gap-2 shadow-2xl backdrop-blur-md active:scale-95"
+            className="bg-black hover:bg-neutral-950 border border-white/[0.08] text-white px-4 py-2 rounded-xl font-bold transition text-sm flex items-center gap-2 shadow-[0_4px_25px_rgba(0,0,0,0.8)] active:scale-95"
           >
             <div className="w-5 h-5 rounded-full bg-[#FE2C55]/20 flex items-center justify-center">
               <Person className="w-3.5 h-3.5 text-[#FE2C55]" />
@@ -44,7 +44,7 @@ export default function Header({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                className="absolute right-0 top-12 mt-2 w-52 bg-[#000000] border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden z-50"
+                className="absolute right-0 top-12 mt-2 w-52 bg-[#000000] border border-white/[0.08] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] overflow-hidden z-50"
               >
                 <div className="px-4 py-3 border-b border-white/5">
                   <p className="text-[10px] uppercase font-black tracking-widest text-white/40 mb-1">Aptos Wallet</p>

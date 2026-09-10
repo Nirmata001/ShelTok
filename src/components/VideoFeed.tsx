@@ -280,21 +280,21 @@ const VideoItem = memo(({
   };
 
   return (
-    <div className="relative h-full w-full bg-black flex items-center justify-center p-0 md:py-1 snap-start">
+    <div className="relative h-full w-full bg-black flex items-center justify-center p-0 md:py-3 md:px-4 snap-start">
       <div className={`flex md:space-x-4 space-x-0 justify-center items-center md:items-end relative transition-all duration-300 w-full h-full max-w-full ${
         aspectRatio === 'landscape' 
-          ? 'md:h-auto md:max-h-[calc(100vh-25px)] md:-translate-x-6 lg:-translate-x-8 xl:-translate-x-12' 
+          ? 'md:h-auto md:max-h-[calc(100vh-48px)] md:-translate-x-6 lg:-translate-x-8 xl:-translate-x-12' 
           : aspectRatio === 'square'
-            ? 'md:h-auto md:max-h-[calc(100vh-25px)] md:-translate-x-8 lg:-translate-x-12 xl:-translate-x-16'
-            : 'md:max-h-[calc(100vh-25px)] md:-translate-x-8 lg:-translate-x-12 xl:-translate-x-16'
+            ? 'md:h-auto md:max-h-[calc(100vh-48px)] md:-translate-x-8 lg:-translate-x-12 xl:-translate-x-16'
+            : 'md:max-h-[calc(100vh-48px)] md:-translate-x-8 lg:-translate-x-12 xl:-translate-x-16'
       }`}>
         
         {/* Video Card Container */}
-        <div className={`video-container bg-tiktok-dark rounded-none md:rounded-xl overflow-hidden relative flex items-center justify-center border-0 md:border md:border-white/10 shadow-2xl transition-all duration-300 w-full h-full ${
+        <div className={`video-container bg-tiktok-dark rounded-none md:rounded-xl overflow-hidden relative flex items-center justify-center border-0 md:border md:border-white/[0.04] shadow-[0_0_60px_rgba(0,0,0,0.95)] transition-all duration-300 w-full h-full ${
           aspectRatio === 'landscape' 
-            ? 'md:w-[862px] lg:w-[983px] xl:w-[1079px] max-w-[calc(100%-80px)] md:aspect-[16/9] md:h-auto md:max-h-[calc(100vh-25px)]' 
+            ? 'md:w-[836px] lg:w-[954px] xl:w-[1047px] max-w-[calc(100%-80px)] md:aspect-[16/9] md:h-auto md:max-h-[calc(100vh-48px)]' 
             : aspectRatio === 'square' 
-              ? 'md:w-[572px] lg:w-[624px] xl:w-[676px] max-w-[calc(100%-80px)] md:aspect-square md:h-auto md:max-h-[calc(100vh-25px)]' 
+              ? 'md:w-[572px] lg:w-[624px] xl:w-[676px] max-w-[calc(100%-80px)] md:aspect-square md:h-auto md:max-h-[calc(100vh-48px)]' 
               : 'md:w-[320px] xl:w-[400px]'
         }`}>
           {shouldLoad ? (
@@ -367,10 +367,10 @@ const VideoItem = memo(({
 
               {/* Desktop Overlay Info */}
               <div className="hidden md:flex absolute inset-0 flex-col justify-end pointer-events-none z-20">
-                <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
+                <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/35 to-transparent pointer-events-none" />
                 
                 <div className="pl-3 pr-5 pb-5 relative z-10 text-left pointer-events-auto">
-                  <div className="font-bold text-base flex items-center gap-1.5 text-white mb-1.5 drop-shadow-md">
+                  <div className="font-bold text-base flex items-center gap-1.5 text-white mb-1.5 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
                     <span className="-ml-0.5 hover:underline cursor-pointer font-black" onClick={(e) => onUsernameClick?.(video.wallet_address, e)}>
                       @{video.wallet_address.slice(0, 6)}...{video.wallet_address.slice(-4)}
                     </span>
@@ -380,32 +380,32 @@ const VideoItem = memo(({
                         e.stopPropagation();
                         onToggleFollow?.();
                       }}
-                      className={`text-xs font-black tracking-wide transition-all cursor-pointer ${isFollowing ? 'text-white/60 hover:text-white' : 'text-tiktok-red hover:brightness-110'}`}
+                      className={`text-xs font-black tracking-wide transition-all cursor-pointer drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] ${isFollowing ? 'text-white/80 hover:text-white' : 'text-tiktok-red hover:brightness-110'}`}
                     >
                       {isFollowing ? 'Following' : 'Follow'}
                     </button>
                   </div>
                   {video.description && (
-                    <div className="text-sm line-clamp-2 text-white/95 font-semibold leading-relaxed mb-2 drop-shadow-md pr-6">
+                    <div className="text-sm line-clamp-2 text-white font-semibold leading-relaxed mb-2 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] pr-6">
                       {video.description}
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Mobile Overlay: Gradient Layer */}
-              <div className="md:hidden absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/90 pointer-events-none z-10" />
+              {/* Mobile Overlay: Minimal bottom gradient for legibility */}
+              <div className="md:hidden absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/40 to-transparent pointer-events-none z-10" />
 
               {/* Mobile Overlay: Bottom Left Info Area */}
               <div className="md:hidden absolute bottom-3 left-0 w-[calc(100%-64px)] px-4 pb-1 z-40 pointer-events-auto flex flex-col gap-1 text-left">
                 <h2 
                   onClick={(e) => onUsernameClick?.(video.wallet_address, e)}
-                  className="font-bold text-[15px] text-white drop-shadow-lg cursor-pointer hover:underline flex items-center gap-1.5"
+                  className="font-bold text-[15px] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] cursor-pointer hover:underline flex items-center gap-1.5"
                 >
                   <span>@{video.wallet_address.slice(0, 6)}...{video.wallet_address.slice(-4)}</span>
                 </h2>
                 {video.description && (
-                  <p className="text-xs text-white/90 drop-shadow-md line-clamp-2 leading-relaxed font-normal">
+                  <p className="text-xs text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] line-clamp-2 leading-relaxed font-medium">
                     {video.description}
                   </p>
                 )}
@@ -1057,16 +1057,14 @@ export default function VideoFeed({
       )}
 
       {isLoading ? (
-        <div className="flex-1 w-full h-full flex items-center justify-center md:py-1 overflow-hidden">
-          <div className="flex items-end md:space-x-4 space-x-0 justify-center relative w-full h-full max-h-[calc(100vh-25px)] -translate-y-10 md:-translate-y-16 lg:-translate-y-20 -translate-x-6 md:-translate-x-20 lg:-translate-x-24 xl:-translate-x-28 transition-all duration-300">
-            <div className="bg-white/5 animate-pulse rounded-xl w-full md:w-[320px] xl:w-[400px] h-full"></div>
-            <div className="hidden md:flex flex-col items-center space-y-5 pb-2 z-30">
-              <div className="w-12 h-12 rounded-full bg-white/5 animate-pulse mb-2"></div>
-              <div className="w-12 h-12 rounded-full bg-white/5 animate-pulse"></div>
-              <div className="w-12 h-12 rounded-full bg-white/5 animate-pulse"></div>
-              <div className="w-12 h-12 rounded-full bg-white/5 animate-pulse"></div>
-              <div className="w-12 h-12 rounded-full bg-white/5 animate-pulse"></div>
-              <div className="w-12 h-12 rounded-full bg-white/5 animate-pulse"></div>
+        <div className="relative h-full w-full bg-black flex items-center justify-center p-0 md:py-3 md:px-4">
+          <div className="flex md:space-x-4 space-x-0 justify-center items-end relative transition-all duration-300 w-full h-full max-w-full md:max-h-[calc(100vh-48px)] md:-translate-x-8 lg:-translate-x-12 xl:-translate-x-16">
+            <div className="video-container bg-white/5 animate-pulse rounded-none md:rounded-xl overflow-hidden relative flex items-center justify-center border-0 md:border md:border-white/[0.04] shadow-[0_0_60px_rgba(0,0,0,0.95)] transition-all duration-300 w-full h-full md:w-[320px] xl:w-[400px]" />
+            <div className="hidden md:flex flex-col items-center space-y-4 pb-2 z-30 flex-shrink-0">
+              <div className="w-12 h-12 rounded-full bg-white/5 animate-pulse mb-2" />
+              <div className="w-12 h-12 rounded-full bg-white/5 animate-pulse" />
+              <div className="w-12 h-12 rounded-full bg-white/5 animate-pulse" />
+              <div className="w-12 h-12 rounded-full bg-white/5 animate-pulse" />
             </div>
           </div>
         </div>

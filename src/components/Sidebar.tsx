@@ -25,7 +25,7 @@ export default function Sidebar({
       {/* Logo Brand Header */}
       <div className="px-5 mb-4 flex items-center gap-2.5">
         <div className="relative flex items-center justify-center">
-          <div className="relative bg-black border border-white/10 p-1 rounded-xl flex items-center justify-center shadow-lg">
+          <div className="relative bg-black border border-white/[0.06] p-1 rounded-xl flex items-center justify-center shadow-lg">
             <img 
               src="/logo_custom.png" 
               alt="ShelTok Logo" 

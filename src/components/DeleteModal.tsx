@@ -40,17 +40,17 @@ export default function DeleteModal({
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="w-full max-w-sm bg-surface-container-lowest rounded-3xl shadow-[0px_40px_80px_rgba(254,44,85,0.15)] overflow-hidden flex flex-col"
+              className="w-full max-w-sm bg-black text-white border border-white/[0.08] rounded-3xl shadow-[0px_25px_60px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-8 flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mb-6">
-                  <AlertTriangle className="w-8 h-8 text-error" />
+                <div className="w-16 h-16 bg-[#FE2C55]/10 rounded-full flex items-center justify-center mb-6">
+                  <AlertTriangle className="w-8 h-8 text-[#FE2C55]" />
                 </div>
                 
-                <h2 className="text-2xl font-black tracking-tighter text-on-surface mb-2">Delete File?</h2>
-                <p className="text-sm text-on-surface-variant leading-relaxed mb-6">
-                  Are you sure you want to delete <span className="font-bold text-on-surface">"{blobToDelete.blobNameSuffix || blobToDelete.blob_name || 'this file'}"</span>? 
+                <h2 className="text-2xl font-black tracking-tighter text-white mb-2">Delete File?</h2>
+                <p className="text-sm text-white/60 leading-relaxed mb-6">
+                  Are you sure you want to delete <span className="font-bold text-white">"{blobToDelete.blobNameSuffix || blobToDelete.blob_name || 'this file'}"</span>? 
                   This action cannot be undone.
                 </p>
 
