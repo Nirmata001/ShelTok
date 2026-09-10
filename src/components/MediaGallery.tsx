@@ -369,7 +369,7 @@ export default function MediaGallery({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <header className="bg-black sticky top-0 z-10 border-b border-white/[0.06]">
+        <header className="bg-black sticky top-0 z-10">
           <div className={`max-w-full ${isEmbedded ? 'px-6 py-3' : 'px-10 py-4'} flex items-center justify-between`}>
             <div className="flex items-center gap-4">
               {!isEmbedded && (
