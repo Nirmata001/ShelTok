@@ -9,7 +9,6 @@ import {
 } from 'lucide-react';
 
 interface UploadPageProps {
-  account: any;
   connected: boolean;
   isEncoding: boolean;
   isDragging: boolean;
@@ -25,8 +24,6 @@ interface UploadPageProps {
   fileInputRef: React.RefObject<HTMLInputElement>;
   onConnectWallet: () => void;
 }
-
-const QUICK_EMOJIS = ['🔥', '🚀', '⚡', '💎', '❤️', '😂', '💯', '🎵', '✨', '👀', '🦾', '🥂'];
 
 const EMOJI_CATEGORIES: { name: string; emojis: string[] }[] = [
   {
@@ -52,7 +49,6 @@ const EMOJI_CATEGORIES: { name: string; emojis: string[] }[] = [
 ];
 
 const UploadPage: React.FC<UploadPageProps> = ({
-  account,
   connected,
   isEncoding,
   isDragging,

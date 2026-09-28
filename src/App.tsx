@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AptosWalletAdapterProvider, useWallet } from '@aptos-labs/wallet-adapter-react';
 import { Network, AccountAddress } from '@aptos-labs/ts-sdk';
@@ -21,12 +21,10 @@ import {
   ChevronDown, 
   ChevronUp, 
   Home, 
-  Compass,
+  Compass, 
   Plus, 
-  Film,
-  User,
-  Smartphone,
-  Sparkles
+  Film, 
+  User 
 } from 'lucide-react';
 
 // Modular Components
@@ -599,7 +597,6 @@ function ShelbyApp() {
                 {isUploadPageOpen ? (
                   <div className="w-full h-full">
                     <UploadPage 
-                      account={account}
                       connected={connected}
                       isEncoding={isEncoding}
                       isDragging={isDragging}

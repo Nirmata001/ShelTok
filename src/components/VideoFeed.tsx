@@ -8,8 +8,7 @@ import {
   Heart,
   Bookmark,
   Volume2,
-  VolumeX,
-  Share2
+  VolumeX
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
 import { shelbyAuthHeaders, isShelbySWReady } from '../services/shelbyService';
