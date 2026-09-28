@@ -69,15 +69,15 @@ function ShelbyApp() {
   const { data: globalBlobs, isLoading: blobsLoading, refetch, isFetching: blobsFetching } = useQuery({
     queryKey: ['globalBlobs'],
     queryFn: async () => {
-      return await shelbyClient.coordination.getBlobs({
+      return await shelbyClient.index.listObjects({
         where: {
           _or: [
-            { object_name: { _ilike: '%shelbypub/%:::%' } },
-            { object_name: { _ilike: '%sheltok/%:::%' } }
+            { name: { _ilike: '%shelbypub/%:::%' } },
+            { name: { _ilike: '%sheltok/%:::%' } }
           ]
         },
         pagination: { limit: 100 },
-        orderBy: { updated_at: Order_By.Desc }
+        orderBy: { committed_at_micros: Order_By.Desc }
       });
     },
     refetchInterval: 30000,
@@ -92,9 +92,9 @@ function ShelbyApp() {
       : (globalBlobs as any).blobs || (globalBlobs as any).hits || [];
 
     const processed = blobList.map((b: any) => {
-      const fullBlobName = b.blob_name || b.blobNameSuffix || b.name || '';
-      let owner = b.owner || b.address || '0x0';
-      owner = owner.toString().replace(/^@/, '');
+      const fullBlobName = b.key || b.blob_name || b.blobNameSuffix || (typeof b.name === 'string' ? b.name.replace(/^@[^/]+\//, '') : '') || '';
+      let owner = (b.owner ? b.owner.toString() : '') || b.address || '0x0';
+      owner = owner.replace(/^@/, '');
       if ((!fullBlobName.includes('shelbypub/') && !fullBlobName.includes('sheltok/')) || !fullBlobName.includes(':::')) return null;
       const descParts = fullBlobName.split(':::');
       const description = descParts[1] || '';
@@ -113,7 +113,7 @@ function ShelbyApp() {
       const urls = gateways.flatMap(base =>
         variants.map(v => `${base}/v1/blobs/${v}/${fullBlobName}`)
       );
-      return { id: b.id || fullBlobName, rawName: fullBlobName, urls, wallet_address: owner, file_name: fullBlobName, description };
+      return { id: b.content?.blobUid?.toString() || b.id || fullBlobName, rawName: fullBlobName, urls, wallet_address: owner, file_name: fullBlobName, description };
     }).filter(Boolean);
 
     if (!hasShuffled.current && processed.length > 0) {
@@ -296,15 +296,28 @@ function ShelbyApp() {
       try {
         setIsLoadingBlobs(true);
         const accountAddress = AccountAddress.fromString(account.address.toString());
-        const response = await shelbyClient.coordination.getAccountBlobs({ 
-          account: accountAddress 
+        const response = await shelbyClient.index.listObjects({ 
+          where: {
+            owner: { _eq: accountAddress.toString() }
+          },
+          orderBy: { committed_at_micros: Order_By.Desc }
         });
         
         let accountBlobs: any[] = [];
         if (Array.isArray(response)) {
-          accountBlobs = response;
+          accountBlobs = response.map((obj: any) => ({
+            ...obj,
+            blobNameSuffix: obj.key || (typeof obj.name === 'string' ? obj.name.replace(/^@[^/]+\//, '') : '') || '',
+            id: obj.content?.blobUid?.toString() || obj.key || obj.name,
+            creationMicros: obj.committedAtMicros ? Number(obj.committedAtMicros) : 0,
+          }));
         } else if (response && typeof response === 'object') {
-          accountBlobs = (response as any).blobs || (response as any).data || [];
+          accountBlobs = ((response as any).blobs || (response as any).data || []).map((obj: any) => ({
+            ...obj,
+            blobNameSuffix: obj.key || (typeof obj.name === 'string' ? obj.name.replace(/^@[^/]+\//, '') : '') || '',
+            id: obj.content?.blobUid?.toString() || obj.key || obj.name,
+            creationMicros: obj.committedAtMicros ? Number(obj.committedAtMicros) : 0,
+          }));
         }
           
         const videoShelbyPubBlobs = accountBlobs.filter((blob) => {

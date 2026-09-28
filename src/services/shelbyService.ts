@@ -175,7 +175,6 @@ export const createRegisterBlobPayload = (
     blobName: fileName,
     blobMerkleRoot: commitments.blob_merkle_root,
     numChunksets: expectedTotalChunksets(commitments.raw_data_size),
-    expirationMicros: (1000 * 60 * 60 * 24 * 30 + Date.now()) * 1000, // 30 days from now
     blobSize: commitments.raw_data_size,
     encoding: 0, // Default encoding
     selectedLocation: SHELBY_LOCATION,
